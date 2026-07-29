@@ -1,0 +1,16 @@
+<svg width="390" height="844" viewBox="0 0 390 844" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="welcome-gradient" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="10" gradientTransform="matrix(-26.806 41.867 -24.909 -15.948 195 486.49)">
+      <stop offset="0.071857" stop-color="#EFEDCD"/>
+      <stop offset="0.21909" stop-color="#DBA7A8"/>
+      <stop offset="0.29271" stop-color="#D08496"/>
+      <stop offset="0.36633" stop-color="#C66183"/>
+      <stop offset="0.45274" stop-color="#98566B"/>
+      <stop offset="0.53915" stop-color="#6B4B53"/>
+      <stop offset="0.62555" stop-color="#3D3F3B"/>
+      <stop offset="0.66876" stop-color="#263A2F"/>
+      <stop offset="0.71196" stop-color="#0F3423"/>
+    </radialGradient>
+  </defs>
+  <rect width="390" height="844" fill="url(#welcome-gradient)"/>
+</svg>
