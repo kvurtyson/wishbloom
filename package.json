@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build && node -e \"require('fs').cpSync('out','dist',{recursive:true})\"",
+    "build": "vinext build && node -e \"const f=require('fs');f.copyFileSync('dist/server/index.mjs','dist/server/index.js');f.mkdirSync('dist/.openai',{recursive:true});f.copyFileSync('.openai/hosting.json','dist/.openai/hosting.json');f.writeFileSync('dist/package.json','{\\\"type\\\":\\\"module\\\"}')\"",
     "start": "next start",
     "lint": "next lint"
   },
@@ -12,14 +12,19 @@
     "framer-motion": "^12.23.12",
     "next": "^15.4.4",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "react-server-dom-webpack": "^19.2.8",
+    "vinext": "^1.0.0-beta.4"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.11",
     "@types/node": "^22.16.5",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
+    "@vitejs/plugin-react": "^6.0.4",
+    "@vitejs/plugin-rsc": "^0.5.32",
     "tailwindcss": "^4.1.11",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "vite": "^8.1.5"
   }
 }
