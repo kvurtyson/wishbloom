@@ -393,7 +393,7 @@ button { font: inherit; }
   width: 96px;
   height: 95px;
   transform-origin: 50% 50%;
-  animation: hourglass-turn 6.4s ease-in-out infinite;
+  animation: hourglass-turn 12.8s ease-in-out infinite;
 }
 
 .hourglass-half {
@@ -434,26 +434,29 @@ button { font: inherit; }
 }
 
 .hourglass-sand-top {
-  animation: hourglass-drain 6.4s ease-in-out infinite;
+  animation: hourglass-top-flow 12.8s ease-in-out infinite;
 }
 
 .hourglass-sand-bottom {
-  animation: hourglass-fill 6.4s ease-in-out infinite;
+  animation: hourglass-bottom-flow 12.8s ease-in-out infinite;
 }
 
-@keyframes hourglass-drain {
-  0%, 7% { clip-path: inset(0 0 0 0); }
-  60%, 100% { clip-path: inset(100% 0 0 0); }
+@keyframes hourglass-top-flow {
+  0%, 3% { clip-path: inset(0 0 0 0); }
+  30%, 50% { clip-path: inset(100% 0 0 0); }
+  77%, 100% { clip-path: inset(0 0 0 0); }
 }
 
-@keyframes hourglass-fill {
-  0%, 7% { clip-path: inset(0 0 100% 0); }
-  60%, 100% { clip-path: inset(0 0 0 0); }
+@keyframes hourglass-bottom-flow {
+  0%, 3% { clip-path: inset(0 0 100% 0); }
+  30%, 50% { clip-path: inset(0 0 0 0); }
+  77%, 100% { clip-path: inset(0 0 100% 0); }
 }
 
 @keyframes hourglass-turn {
-  0%, 65% { transform: rotate(0deg); }
-  82%, 100% { transform: rotate(180deg); }
+  0%, 33% { transform: rotate(0deg); }
+  43%, 83% { transform: rotate(180deg); }
+  93%, 100% { transform: rotate(360deg); }
 }
 
 @media (prefers-reduced-motion: reduce) {
