@@ -497,59 +497,68 @@ export function WishBloomApp() {
   useEffect(() => {
     if (screen === "expired") return;
 
+    const mobileSession = window.matchMedia("(pointer: coarse)").matches;
+    if (!mobileSession) return;
+
+    const hiddenAtKey = "wishbloom-hidden-at";
+    const storedHiddenAt = Number(window.localStorage.getItem(hiddenAtKey));
     let hiddenAt: number | null =
-      document.hidden || !document.hasFocus() ? Date.now() : null;
+      Number.isFinite(storedHiddenAt) && storedHiddenAt > 0
+        ? storedHiddenAt
+        : null;
     let expiryTimer: number | null = null;
 
     const expireSession = () => {
+      window.localStorage.removeItem(hiddenAtKey);
       stop();
       setScreen("expired");
     };
 
-    const scheduleExpiry = () => {
+    const scheduleExpiry = (delay = 3000) => {
       if (expiryTimer !== null) window.clearTimeout(expiryTimer);
-      expiryTimer = window.setTimeout(expireSession, 3000);
+      expiryTimer = window.setTimeout(expireSession, delay);
     };
 
-    const markPageAway = () => {
+    const markSessionHidden = () => {
       if (hiddenAt === null) {
         hiddenAt = Date.now();
-        scheduleExpiry();
+        window.localStorage.setItem(hiddenAtKey, String(hiddenAt));
       }
+      scheduleExpiry(Math.max(0, 3000 - (Date.now() - hiddenAt)));
     };
 
-    const markPageActive = () => {
+    const restoreSession = () => {
       if (expiryTimer !== null) {
         window.clearTimeout(expiryTimer);
         expiryTimer = null;
       }
       if (hiddenAt !== null && Date.now() - hiddenAt >= 3000) {
         expireSession();
+        return;
       }
       hiddenAt = null;
+      window.localStorage.removeItem(hiddenAtKey);
     };
 
     const handleVisibilityChange = () => {
-      if (document.hidden) markPageAway();
-      else if (document.hasFocus()) markPageActive();
+      if (document.hidden) markSessionHidden();
+      else restoreSession();
     };
 
-    const checkPageFocus = () => {
-      if (document.hidden || !document.hasFocus()) markPageAway();
-      else markPageActive();
-    };
+    if (hiddenAt !== null && Date.now() - hiddenAt >= 3000) {
+      expireSession();
+      return;
+    }
+    if (document.hidden) markSessionHidden();
 
-    if (hiddenAt !== null) scheduleExpiry();
     document.addEventListener("visibilitychange", handleVisibilityChange);
-    window.addEventListener("blur", markPageAway);
-    window.addEventListener("focus", markPageActive);
-    const focusPoll = window.setInterval(checkPageFocus, 250);
+    window.addEventListener("pagehide", markSessionHidden);
+    window.addEventListener("pageshow", restoreSession);
 
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
-      window.removeEventListener("blur", markPageAway);
-      window.removeEventListener("focus", markPageActive);
-      window.clearInterval(focusPoll);
+      window.removeEventListener("pagehide", markSessionHidden);
+      window.removeEventListener("pageshow", restoreSession);
       if (expiryTimer !== null) window.clearTimeout(expiryTimer);
     };
   }, [screen, stop]);
