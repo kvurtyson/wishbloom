@@ -168,6 +168,95 @@ type SeedPath = {
   box: DOMRect;
 };
 
+const flyingSeeds = [
+  { asset: "flying-seed-1.svg", left: 36, top: 349, width: 90, height: 112, rotate: 0, duration: 29, delay: 0, drift: -22 },
+  { asset: "flying-seed-2.svg", left: 272, top: 295, width: 90, height: 112, rotate: 29.16, duration: 25.5, delay: 2.2, drift: 18 },
+  { asset: "flying-seed-3.svg", left: 122, top: 370, width: 79, height: 97, rotate: 29.16, duration: 31.5, delay: 4.6, drift: -14 },
+  { asset: "flying-seed-4.svg", left: 83, top: 594, width: 62, height: 74, rotate: 5.32, duration: 27, delay: 1.1, drift: -28 },
+  { asset: "flying-seed-5.svg", left: 190, top: 440, width: 67, height: 81, rotate: -108.94, duration: 33, delay: 6.2, drift: 21 },
+  { asset: "flying-seed-6.svg", left: 190, top: 529, width: 94, height: 117, rotate: 63.14, duration: 30, delay: 3.4, drift: 27 },
+  { asset: "flying-seed-7.svg", left: 303, top: 367, width: 103, height: 130, rotate: 29.16, duration: 24.5, delay: 7.1, drift: -19 },
+  { asset: "flying-seed-8.svg", left: -18, top: 470, width: 132, height: 168, rotate: 29.16, duration: 34, delay: 5.3, drift: 30 },
+] as const;
+
+function FlyingSeed({
+  seed,
+}: {
+  seed: (typeof flyingSeeds)[number];
+}) {
+  const [vectorMarkup, setVectorMarkup] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    fetch(`${A}${seed.asset}`)
+      .then((response) => response.text())
+      .then((markup) => {
+        if (active) setVectorMarkup(markup);
+      });
+    return () => {
+      active = false;
+    };
+  }, [seed.asset]);
+
+  const distanceToRight = 390 - seed.left + seed.width + 32;
+  const distanceFromLeft = seed.left + seed.width + 32;
+
+  return (
+    <motion.div
+      className="flying-screen-seed"
+      style={{
+        left: seed.left,
+        top: seed.top,
+        width: seed.width,
+        height: seed.height,
+      }}
+      animate={{
+        x: [0, distanceToRight, -distanceFromLeft, 0],
+        y: [0, seed.drift, -seed.drift * 0.55, 0],
+        rotate: [seed.rotate, seed.rotate + 12, seed.rotate - 9, seed.rotate],
+      }}
+      transition={{
+        duration: seed.duration,
+        delay: seed.delay,
+        repeat: Infinity,
+        ease: "linear",
+        times: [0, 0.68, 0.6801, 1],
+      }}
+      aria-hidden="true"
+    >
+      {vectorMarkup ? (
+        <span dangerouslySetInnerHTML={{ __html: vectorMarkup }} />
+      ) : (
+        <img src={`${A}${seed.asset}`} alt="" />
+      )}
+    </motion.div>
+  );
+}
+
+function FlyingScreen({ canvasScale }: { canvasScale: number }) {
+  return (
+    <main className="fixed-viewport">
+      <section
+        className="welcome-canvas flying-screen"
+        style={{ transform: `translate(-50%, -50%) scale(${canvasScale})` }}
+        aria-label="WishBloom your wish is flying"
+      >
+        <Logo />
+        <h1 className="welcome-heading flying-heading">
+          <span>Your wish is</span>
+          <em>now flying.</em>
+        </h1>
+        <p className="flying-support">Watch it on the facade.</p>
+        <div className="flying-seed-field">
+          {flyingSeeds.map((seed) => (
+            <FlyingSeed key={seed.asset} seed={seed} />
+          ))}
+        </div>
+      </section>
+    </main>
+  );
+}
+
 function InteractiveDandelionSeeds({ level }: { level: number }) {
   const outerRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
@@ -376,6 +465,12 @@ export function WishBloomApp() {
       resetCalibration();
     }
   }, [permission, resetCalibration, screen]);
+
+  useEffect(() => {
+    if (screen !== "blowing" || level < 0.9995) return;
+    stop();
+    setScreen("flying");
+  }, [level, screen, stop]);
 
   const requestMicrophone = useCallback(async () => {
     setPermissionError(false);
@@ -606,6 +701,10 @@ export function WishBloomApp() {
     );
   }
 
+  if (screen === "flying") {
+    return <FlyingScreen canvasScale={canvasScale} />;
+  }
+
   return (
     <main className="viewport">
       <div className="stage">
@@ -619,11 +718,6 @@ export function WishBloomApp() {
             transition={{ duration: 0.42, ease: "easeInOut" }}
           >
             <Logo />
-
-            {screen === "flying" && <>
-              <Heading first="Your wish is" second="now flying." />
-              <Dandelion state={dandelionState} progress={100} />
-            </>}
 
             {screen === "expired" && <>
               <Heading first="Your time has" second="expired." />
