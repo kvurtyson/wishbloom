@@ -437,31 +437,14 @@ button { font: inherit; }
   animation: hourglass-fill 6.4s ease-in-out infinite;
 }
 
-.hourglass-stream {
-  position: absolute;
-  z-index: 3;
-  left: 47.25px;
-  top: 45px;
-  width: 1.5px;
-  height: 5px;
-  border-radius: 999px;
-  background: #9d2548;
-  animation: hourglass-stream 6.4s ease-in-out infinite;
-}
-
 @keyframes hourglass-drain {
   0%, 8% { clip-path: inset(0 0 0 0); }
   58%, 100% { clip-path: inset(100% 0 0 0); }
 }
 
 @keyframes hourglass-fill {
-  0%, 8% { clip-path: inset(100% 0 0 0); }
+  0%, 8% { clip-path: inset(0 0 100% 0); }
   58%, 100% { clip-path: inset(0 0 0 0); }
-}
-
-@keyframes hourglass-stream {
-  0%, 7%, 59%, 100% { opacity: 0; transform: scaleY(.2); }
-  12%, 54% { opacity: .85; transform: scaleY(1); }
 }
 
 @keyframes hourglass-turn {

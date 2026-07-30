@@ -290,7 +290,6 @@ function ExpiredScreen({ canvasScale }: { canvasScale: number }) {
                   <img src={`${A}expired-hourglass-top.svg`} alt="" />
                 </span>
               </div>
-              <span className="hourglass-stream" />
               <div className="hourglass-half hourglass-bottom">
                 <img className="hourglass-base" src={`${A}expired-hourglass-bottom.svg`} alt="" />
                 <span className="hourglass-sand hourglass-sand-bottom">
