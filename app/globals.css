@@ -121,7 +121,7 @@ button { font: inherit; }
   font-size: 48px;
   font-style: normal;
   font-weight: 300;
-  line-height: normal;
+  line-height: 58px;
   letter-spacing: -1.92px;
 }
 
@@ -312,7 +312,7 @@ button { font: inherit; }
   position: absolute;
   z-index: 10;
   left: 58px;
-  top: 628.17px;
+  top: 638.17px;
   width: 275px;
   height: 50px;
   overflow: hidden;
@@ -513,7 +513,7 @@ button { font: inherit; }
   position: absolute;
   z-index: 8;
   left: 80px;
-  top: 620.255127px;
+  top: 630.255127px;
   width: 229.139175px;
   height: 65.830017px;
   padding: 0;
@@ -612,11 +612,11 @@ button { font: inherit; }
   white-space: nowrap;
   font-family: "Canela Deck Trial", "Times New Roman", serif;
   font-size: 24px;
-  line-height: normal;
+  line-height: 29px;
   letter-spacing: -.96px;
 }
 
-.logo span, .logo i { position: relative; top: 6.86px; font-weight: 300; }
+.logo span, .logo i { position: relative; top: 6.86px; font-weight: 300; line-height: 29px; }
 .logo i { font-style: italic; }
 .logo img { position: absolute; width: 10px; height: 15px; top: 5px; right: 4px; }
 
@@ -725,7 +725,7 @@ button { font: inherit; }
   position: absolute;
   z-index: 10;
   left: 80px;
-  top: 620.255px;
+  top: 630.255px;
   width: 229.139px;
   height: 65.83px;
 }
@@ -752,7 +752,7 @@ button { font: inherit; }
 .footer-note {
   position: absolute;
   z-index: 10;
-  top: 699px;
+  top: 709px;
   left: 90px;
   width: 210.114px;
   height: 15px;
@@ -770,7 +770,7 @@ button { font: inherit; }
 .permission-error {
   position: absolute;
   z-index: 11;
-  top: 688px;
+  top: 698px;
   left: 50%;
   transform: translateX(-50%);
   width: 280px;
