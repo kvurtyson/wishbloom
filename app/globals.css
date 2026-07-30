@@ -8,9 +8,14 @@
 
 * { box-sizing: border-box; }
 
-html, body {
+html,
+body {
+  width: 100%;
+  height: 100%;
   margin: 0;
-  min-height: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overscroll-behavior: none;
   overflow: hidden;
   background: #081f16;
 }
@@ -20,32 +25,71 @@ button { font: inherit; }
 .fixed-viewport {
   position: fixed;
   inset: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
   display: grid;
   place-items: center;
   overflow: hidden;
-  background: #081f16;
+  background: #0f3423;
+}
+
+.fixed-viewport::before,
+.viewport::before {
+  content: "";
+  position: fixed;
+  z-index: 0;
+  left: 50%;
+  top: calc(50% + 64.49px);
+  width: 1200px;
+  height: 1200px;
+  pointer-events: none;
+  transform: translate(-50%, -50%) rotate(122.6deg);
+  background:
+    radial-gradient(
+      ellipse 497px 296px at center,
+      #efedcd 7.1857%,
+      #dba7a8 21.909%,
+      #d08496 29.271%,
+      #c66183 36.633%,
+      #98566b 45.274%,
+      #6b4b53 53.915%,
+      #3d3f3b 62.555%,
+      #263a2f 66.876%,
+      #0f3423 71.196%
+    );
+}
+
+.fixed-viewport::after,
+.viewport::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+  opacity: .22;
+  mix-blend-mode: soft-light;
+  background-image:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 320 320' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n' color-interpolation-filters='sRGB'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.64' numOctaves='5' seed='7' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.54'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 113 113' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n' color-interpolation-filters='sRGB'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.18' numOctaves='3' seed='19' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.34'/%3E%3C/svg%3E");
+  background-size: 320px 320px, 113px 113px;
+  background-position: 0 0, 37px 61px;
 }
 
 .welcome-canvas {
   position: absolute;
+  z-index: 1;
   left: 50%;
   top: 50%;
   width: 390px;
   height: 844px;
   overflow: hidden;
   transform-origin: center center;
-  background: #0f3423 url("/assets/welcome-background.svg") center / 390px 844px no-repeat;
+  background: transparent;
 }
 
 .welcome-canvas::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 20;
-  pointer-events: none;
-  opacity: .15;
-  mix-blend-mode: soft-light;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
+  content: none;
 }
 
 .welcome-layer {
@@ -504,14 +548,22 @@ button { font: inherit; }
 }
 
 .viewport {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 100vh;
   min-height: 100dvh;
   display: grid;
   place-items: center;
-  background: #081f16;
+  overflow: hidden;
+  background: #0f3423;
 }
 
 .stage {
   position: relative;
+  z-index: 1;
   width: min(100vw, calc(100dvh * 390 / 844));
   aspect-ratio: 390 / 844;
   overflow: hidden;

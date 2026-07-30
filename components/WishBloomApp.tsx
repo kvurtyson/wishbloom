@@ -488,7 +488,7 @@ export function WishBloomApp() {
   const { level, permission, start, stop, resetCalibration } = useMicrophoneLevel();
 
   useEffect(() => {
-    const fitCanvas = () => setCanvasScale(Math.min(window.innerWidth / 390, window.innerHeight / 844));
+    const fitCanvas = () => setCanvasScale(Math.min(1, window.innerWidth / 390));
     fitCanvas();
     window.addEventListener("resize", fitCanvas);
     return () => window.removeEventListener("resize", fitCanvas);
