@@ -430,20 +430,11 @@ button { font: inherit; }
 }
 
 .hourglass-sand-top {
-  opacity: .8125;
   animation: hourglass-drain 6.4s ease-in-out infinite;
 }
 
 .hourglass-sand-bottom {
   animation: hourglass-fill 6.4s ease-in-out infinite;
-}
-
-.hourglass-sand-bottom::before,
-.hourglass-sand-bottom::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: url("/assets/expired-hourglass-bottom.svg") center / 100% 100% no-repeat;
 }
 
 @keyframes hourglass-drain {

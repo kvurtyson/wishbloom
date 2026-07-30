@@ -293,7 +293,9 @@ function ExpiredScreen({ canvasScale }: { canvasScale: number }) {
               <div className="hourglass-half hourglass-bottom">
                 <img className="hourglass-base" src={`${A}expired-hourglass-bottom.svg`} alt="" />
                 <span className="hourglass-sand hourglass-sand-bottom">
-                  <img src={`${A}expired-hourglass-bottom.svg`} alt="" />
+                  {Array.from({ length: 8 }, (_, index) => (
+                    <img key={index} src={`${A}expired-hourglass-bottom.svg`} alt="" />
+                  ))}
                 </span>
               </div>
             </div>
