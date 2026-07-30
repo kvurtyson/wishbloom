@@ -549,15 +549,22 @@ export function WishBloomApp() {
       expireSession();
       return;
     }
-    if (document.hidden) markSessionHidden();
+    if (document.hidden) {
+      markSessionHidden();
+    } else if (hiddenAt !== null) {
+      hiddenAt = null;
+      window.localStorage.removeItem(hiddenAtKey);
+    }
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
     window.addEventListener("pagehide", markSessionHidden);
+    window.addEventListener("beforeunload", markSessionHidden);
     window.addEventListener("pageshow", restoreSession);
 
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("pagehide", markSessionHidden);
+      window.removeEventListener("beforeunload", markSessionHidden);
       window.removeEventListener("pageshow", restoreSession);
       if (expiryTimer !== null) window.clearTimeout(expiryTimer);
     };

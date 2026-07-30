@@ -110,7 +110,7 @@ button { font: inherit; }
   position: absolute;
   z-index: 6;
   left: 76px;
-  top: 122.759155px;
+  top: 132.759155px;
   width: 239px;
   height: 116px;
   margin: 0;
@@ -142,7 +142,7 @@ button { font: inherit; }
   position: absolute;
   z-index: 6;
   left: 83px;
-  top: 273.298676px;
+  top: 263.298676px;
   width: 223.698349px;
   height: 51px;
   color: #e7a2b2;
@@ -305,7 +305,7 @@ button { font: inherit; }
 }
 
 .welcome-heading.blow-heading {
-  top: 132.759155px;
+  top: 142.759155px;
 }
 
 .welcome-blow-progress {
@@ -380,7 +380,7 @@ button { font: inherit; }
 .flying-support {
   position: absolute;
   z-index: 6;
-  top: 273.299px;
+  top: 263.299px;
   left: 50%;
   transform: translateX(-50%);
   margin: 0;
@@ -605,7 +605,7 @@ button { font: inherit; }
   width: 120.922px;
   height: 35.863px;
   left: 135px;
-  top: 92px;
+  top: 102px;
   transform: scale(.85);
   transform-origin: top center;
   color: white;
