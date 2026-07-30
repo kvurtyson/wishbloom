@@ -388,7 +388,7 @@ button { font: inherit; }
 
 .expired-hourglass {
   position: absolute;
-  left: 137.93px;
+  left: 89.93px;
   top: 130.95px;
   width: 96px;
   height: 95px;
@@ -403,7 +403,7 @@ button { font: inherit; }
 
 .welcome-dandelion-base .expired-hourglass img:last-child {
   left: 20px;
-  top: 47.5px;
+  top: 46.75px;
   width: 56px;
   height: 39.583px;
 }
