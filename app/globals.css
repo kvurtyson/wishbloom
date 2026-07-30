@@ -425,6 +425,10 @@ button { font: inherit; }
   opacity: .5;
 }
 
+.hourglass-bottom .hourglass-base {
+  opacity: 1;
+}
+
 .hourglass-sand {
   overflow: hidden;
 }
