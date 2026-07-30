@@ -430,6 +430,7 @@ button { font: inherit; }
 }
 
 .hourglass-sand-top {
+  opacity: .8125;
   animation: hourglass-drain 6.4s ease-in-out infinite;
 }
 
