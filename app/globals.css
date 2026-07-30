@@ -437,19 +437,27 @@ button { font: inherit; }
   animation: hourglass-fill 6.4s ease-in-out infinite;
 }
 
+.hourglass-sand-bottom::before,
+.hourglass-sand-bottom::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("/assets/expired-hourglass-bottom.svg") center / 100% 100% no-repeat;
+}
+
 @keyframes hourglass-drain {
-  0%, 8% { clip-path: inset(0 0 0 0); }
-  58%, 100% { clip-path: inset(100% 0 0 0); }
+  0%, 7% { clip-path: inset(0 0 0 0); }
+  60%, 100% { clip-path: inset(100% 0 0 0); }
 }
 
 @keyframes hourglass-fill {
-  0%, 8% { clip-path: inset(0 0 100% 0); }
-  58%, 100% { clip-path: inset(0 0 0 0); }
+  0%, 7% { clip-path: inset(0 0 100% 0); }
+  60%, 100% { clip-path: inset(0 0 0 0); }
 }
 
 @keyframes hourglass-turn {
-  0%, 62% { transform: rotate(0deg); }
-  78%, 100% { transform: rotate(180deg); }
+  0%, 65% { transform: rotate(0deg); }
+  82%, 100% { transform: rotate(180deg); }
 }
 
 @media (prefers-reduced-motion: reduce) {
