@@ -284,8 +284,19 @@ function ExpiredScreen({ canvasScale }: { canvasScale: number }) {
             <img className="welcome-flower-glow" src={`${A}glow.svg`} alt="" />
             <img className="welcome-flower-head" src={`${A}welcome-flower-head.svg`} alt="" />
             <div className="expired-hourglass">
-              <img src={`${A}expired-hourglass-top.svg`} alt="" />
-              <img src={`${A}expired-hourglass-bottom.svg`} alt="" />
+              <div className="hourglass-half hourglass-top">
+                <img className="hourglass-base" src={`${A}expired-hourglass-top.svg`} alt="" />
+                <span className="hourglass-sand hourglass-sand-top">
+                  <img src={`${A}expired-hourglass-top.svg`} alt="" />
+                </span>
+              </div>
+              <span className="hourglass-stream" />
+              <div className="hourglass-half hourglass-bottom">
+                <img className="hourglass-base" src={`${A}expired-hourglass-bottom.svg`} alt="" />
+                <span className="hourglass-sand hourglass-sand-bottom">
+                  <img src={`${A}expired-hourglass-bottom.svg`} alt="" />
+                </span>
+              </div>
             </div>
           </div>
         </motion.div>

@@ -392,20 +392,81 @@ button { font: inherit; }
   top: 130.95px;
   width: 96px;
   height: 95px;
+  transform-origin: 50% 50%;
+  animation: hourglass-turn 6.4s ease-in-out infinite;
 }
 
-.welcome-dandelion-base .expired-hourglass img:first-child {
+.hourglass-half {
+  position: absolute;
   left: 20px;
+  width: 56px;
+  height: 39.583px;
+  overflow: hidden;
+}
+
+.hourglass-top {
   top: 7.917px;
-  width: 56px;
-  height: 39.583px;
 }
 
-.welcome-dandelion-base .expired-hourglass img:last-child {
-  left: 20px;
+.hourglass-bottom {
   top: 46.75px;
-  width: 56px;
-  height: 39.583px;
+}
+
+.welcome-dandelion-base .hourglass-half img,
+.hourglass-sand {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.hourglass-base {
+  opacity: .5;
+}
+
+.hourglass-sand {
+  overflow: hidden;
+}
+
+.hourglass-sand-top {
+  animation: hourglass-drain 6.4s ease-in-out infinite;
+}
+
+.hourglass-sand-bottom {
+  animation: hourglass-fill 6.4s ease-in-out infinite;
+}
+
+.hourglass-stream {
+  position: absolute;
+  z-index: 3;
+  left: 47.25px;
+  top: 45px;
+  width: 1.5px;
+  height: 5px;
+  border-radius: 999px;
+  background: #9d2548;
+  animation: hourglass-stream 6.4s ease-in-out infinite;
+}
+
+@keyframes hourglass-drain {
+  0%, 8% { clip-path: inset(0 0 0 0); }
+  58%, 100% { clip-path: inset(100% 0 0 0); }
+}
+
+@keyframes hourglass-fill {
+  0%, 8% { clip-path: inset(100% 0 0 0); }
+  58%, 100% { clip-path: inset(0 0 0 0); }
+}
+
+@keyframes hourglass-stream {
+  0%, 7%, 59%, 100% { opacity: 0; transform: scaleY(.2); }
+  12%, 54% { opacity: .85; transform: scaleY(1); }
+}
+
+@keyframes hourglass-turn {
+  0%, 62% { transform: rotate(0deg); }
+  78%, 100% { transform: rotate(180deg); }
 }
 
 @media (prefers-reduced-motion: reduce) {
