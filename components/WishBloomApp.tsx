@@ -485,7 +485,8 @@ export function WishBloomApp() {
   useEffect(() => {
     if (screen === "expired") return;
 
-    let hiddenAt: number | null = document.hidden ? Date.now() : null;
+    let hiddenAt: number | null =
+      document.hidden || !document.hasFocus() ? Date.now() : null;
     let expiryTimer: number | null = null;
 
     const expireSession = () => {
@@ -498,13 +499,14 @@ export function WishBloomApp() {
       expiryTimer = window.setTimeout(expireSession, 3000);
     };
 
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
+    const markPageAway = () => {
+      if (hiddenAt === null) {
         hiddenAt = Date.now();
         scheduleExpiry();
-        return;
       }
+    };
 
+    const markPageActive = () => {
       if (expiryTimer !== null) {
         window.clearTimeout(expiryTimer);
         expiryTimer = null;
@@ -515,11 +517,27 @@ export function WishBloomApp() {
       hiddenAt = null;
     };
 
-    if (document.hidden) scheduleExpiry();
+    const handleVisibilityChange = () => {
+      if (document.hidden) markPageAway();
+      else if (document.hasFocus()) markPageActive();
+    };
+
+    const checkPageFocus = () => {
+      if (document.hidden || !document.hasFocus()) markPageAway();
+      else markPageActive();
+    };
+
+    if (hiddenAt !== null) scheduleExpiry();
     document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("blur", markPageAway);
+    window.addEventListener("focus", markPageActive);
+    const focusPoll = window.setInterval(checkPageFocus, 250);
 
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("blur", markPageAway);
+      window.removeEventListener("focus", markPageActive);
+      window.clearInterval(focusPoll);
       if (expiryTimer !== null) window.clearTimeout(expiryTimer);
     };
   }, [screen, stop]);
