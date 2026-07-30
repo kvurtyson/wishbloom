@@ -312,7 +312,7 @@ button { font: inherit; }
   position: absolute;
   z-index: 10;
   left: 58px;
-  top: 668.17px;
+  top: 628.17px;
   width: 275px;
   height: 50px;
   overflow: hidden;
@@ -513,7 +513,7 @@ button { font: inherit; }
   position: absolute;
   z-index: 8;
   left: 80px;
-  top: 660.255127px;
+  top: 620.255127px;
   width: 229.139175px;
   height: 65.830017px;
   padding: 0;
@@ -605,7 +605,9 @@ button { font: inherit; }
   width: 120.922px;
   height: 35.863px;
   left: 135px;
-  top: 57px;
+  top: 92px;
+  transform: scale(.85);
+  transform-origin: top center;
   color: white;
   white-space: nowrap;
   font-family: "Canela Deck Trial", "Times New Roman", serif;
@@ -723,7 +725,7 @@ button { font: inherit; }
   position: absolute;
   z-index: 10;
   left: 80px;
-  top: 660.255px;
+  top: 620.255px;
   width: 229.139px;
   height: 65.83px;
 }
@@ -750,7 +752,7 @@ button { font: inherit; }
 .footer-note {
   position: absolute;
   z-index: 10;
-  top: 739px;
+  top: 699px;
   left: 90px;
   width: 210.114px;
   height: 15px;
@@ -768,7 +770,7 @@ button { font: inherit; }
 .permission-error {
   position: absolute;
   z-index: 11;
-  top: 728px;
+  top: 688px;
   left: 50%;
   transform: translateX(-50%);
   width: 280px;
