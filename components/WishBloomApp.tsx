@@ -292,10 +292,10 @@ function InteractiveDandelionSeeds({ level }: { level: number }) {
           localProgress = Math.max(0, Math.min(1, elapsed / 1500));
         }
         const curve = localProgress * localProgress * (3 - 2 * localProgress);
-        const horizontal = curve * (155 + (index % 4) * 13);
+        const horizontal = curve * (410 + (index % 4) * 18);
         const vertical = -curve * (28 + (index % 5) * 9);
         const rotation = curve * (-8 + (index % 5) * 5);
-        const opacity = localProgress < 0.58 ? 1 : Math.max(0, 1 - (localProgress - 0.58) / 0.42);
+        const opacity = localProgress < 1 ? 1 : 0;
 
         const seedGroup = group[0]?.element.parentElement;
         if (!seedGroup) return;
@@ -660,11 +660,26 @@ function WelcomeFlyingSeed({
   duration: number;
   path: { x: number[]; y: number[]; rotate: number[] };
 }) {
+  const [vectorMarkup, setVectorMarkup] = useState("");
+
+  useEffect(() => {
+    let active = true;
+
+    fetch(`${A}${asset}`)
+      .then((response) => response.text())
+      .then((markup) => {
+        if (active) setVectorMarkup(markup);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [asset]);
+
   return (
-    <motion.img
+    <motion.div
       className={className}
-      src={`${A}${asset}`}
-      alt=""
+      aria-hidden="true"
       animate={{
         x: path.x,
         y: path.y,
@@ -678,6 +693,15 @@ function WelcomeFlyingSeed({
         ease: [0.2, 0.58, 0.3, 1],
         times: [0, 0.32, 0.7, 1],
       }}
-    />
+    >
+      {vectorMarkup ? (
+        <span
+          className="welcome-seed-vector"
+          dangerouslySetInnerHTML={{ __html: vectorMarkup }}
+        />
+      ) : (
+        <img className="welcome-seed-fallback" src={`${A}${asset}`} alt="" />
+      )}
+    </motion.div>
   );
 }
