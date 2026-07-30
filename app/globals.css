@@ -377,6 +377,37 @@ button { font: inherit; }
   shape-rendering: geometricPrecision;
 }
 
+.expired-heading {
+  left: 35px;
+  width: 320px;
+}
+
+.expired-support {
+  width: 223.698px;
+}
+
+.expired-hourglass {
+  position: absolute;
+  left: 137.93px;
+  top: 130.95px;
+  width: 96px;
+  height: 95px;
+}
+
+.welcome-dandelion-base .expired-hourglass img:first-child {
+  left: 20px;
+  top: 7.917px;
+  width: 56px;
+  height: 39.583px;
+}
+
+.welcome-dandelion-base .expired-hourglass img:last-child {
+  left: 20px;
+  top: 47.5px;
+  width: 56px;
+  height: 39.583px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .flying-screen-seed {
     transform: none !important;

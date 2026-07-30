@@ -253,6 +253,47 @@ function FlyingScreen({ canvasScale }: { canvasScale: number }) {
   );
 }
 
+function ExpiredScreen({ canvasScale }: { canvasScale: number }) {
+  return (
+    <main className="fixed-viewport">
+      <section
+        className="welcome-canvas expired-screen"
+        style={{ transform: `translate(-50%, -50%) scale(${canvasScale})` }}
+        aria-label="WishBloom expired session"
+      >
+        <Logo />
+        <h1 className="welcome-heading expired-heading">
+          <span>Your time has</span>
+          <em>expired.</em>
+        </h1>
+        <div className="welcome-support expired-support">
+          <p>Try to connect again.</p>
+        </div>
+        <motion.div
+          className="welcome-dandelion"
+          animate={{ rotate: [-1.5, 1.5], x: [-3, 3] }}
+          transition={{
+            duration: 6,
+            repeat: Infinity,
+            repeatType: "reverse",
+            ease: "easeInOut",
+          }}
+        >
+          <div className="welcome-dandelion-base" aria-hidden="true">
+            <img className="welcome-flower-stem" src={`${A}stem.svg`} alt="" />
+            <img className="welcome-flower-glow" src={`${A}glow.svg`} alt="" />
+            <img className="welcome-flower-head" src={`${A}welcome-flower-head.svg`} alt="" />
+            <div className="expired-hourglass">
+              <img src={`${A}expired-hourglass-top.svg`} alt="" />
+              <img src={`${A}expired-hourglass-bottom.svg`} alt="" />
+            </div>
+          </div>
+        </motion.div>
+      </section>
+    </main>
+  );
+}
+
 function InteractiveDandelionSeeds({ level }: { level: number }) {
   const outerRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
@@ -440,6 +481,48 @@ export function WishBloomApp() {
     window.addEventListener("resize", fitCanvas);
     return () => window.removeEventListener("resize", fitCanvas);
   }, []);
+
+  useEffect(() => {
+    if (screen === "expired") return;
+
+    let hiddenAt: number | null = document.hidden ? Date.now() : null;
+    let expiryTimer: number | null = null;
+
+    const expireSession = () => {
+      stop();
+      setScreen("expired");
+    };
+
+    const scheduleExpiry = () => {
+      if (expiryTimer !== null) window.clearTimeout(expiryTimer);
+      expiryTimer = window.setTimeout(expireSession, 3000);
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        hiddenAt = Date.now();
+        scheduleExpiry();
+        return;
+      }
+
+      if (expiryTimer !== null) {
+        window.clearTimeout(expiryTimer);
+        expiryTimer = null;
+      }
+      if (hiddenAt !== null && Date.now() - hiddenAt >= 3000) {
+        expireSession();
+      }
+      hiddenAt = null;
+    };
+
+    if (document.hidden) scheduleExpiry();
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      if (expiryTimer !== null) window.clearTimeout(expiryTimer);
+    };
+  }, [screen, stop]);
 
   const countdown = useMemo(() => `${String(Math.floor(remaining / 60)).padStart(2, "0")}:${String(remaining % 60).padStart(2, "0")}`, [remaining]);
 
@@ -701,6 +784,10 @@ export function WishBloomApp() {
     return <FlyingScreen canvasScale={canvasScale} />;
   }
 
+  if (screen === "expired") {
+    return <ExpiredScreen canvasScale={canvasScale} />;
+  }
+
   return (
     <main className="viewport">
       <div className="stage">
@@ -715,11 +802,6 @@ export function WishBloomApp() {
           >
             <Logo />
 
-            {screen === "expired" && <>
-              <Heading first="Your time has" second="expired." />
-              <p className="support">Try to connect again.</p>
-              <Dandelion state={dandelionState} />
-            </>}
           </motion.section>
         </AnimatePresence>
 
