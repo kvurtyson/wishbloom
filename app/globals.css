@@ -330,14 +330,13 @@ button { font: inherit; }
 
 .flying-heading {
   left: 42px;
-  top: 132.729px;
   width: 306px;
 }
 
 .flying-support {
   position: absolute;
   z-index: 6;
-  top: 260.299px;
+  top: 273.299px;
   left: 50%;
   transform: translateX(-50%);
   margin: 0;
