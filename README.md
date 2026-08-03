@@ -25,11 +25,21 @@ npm start
 
 ## Prototype behavior
 
-- Start moves from the welcome screen to microphone permission.
+- Start joins a shared first-in, first-out queue.
+- The first visitor moves to microphone permission while later visitors remain on the waiting screen.
+- Queue position and estimated wait update automatically, and the next visitor is released when the active visitor finishes or disconnects.
 - Enable requests microphone access through `getUserMedia`.
-- A mocked queue displays for five seconds before the active session begins.
+- A five-second preparation countdown displays after microphone permission is granted.
 - During the active session, microphone intensity drives continuous blow progress.
 - The small dots in the bottom-right corner provide direct access to all six reference screens for review.
 - No audio is recorded, stored, or transmitted.
+
+## Queue storage
+
+The shared queue uses an Upstash Redis database connected to Vercel. Configure either of these environment-variable pairs:
+
+- `KV_REST_API_URL` and `KV_REST_API_TOKEN`
+- `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN`
+- `UPSTASH_REDIS_REST_KV_REST_API_URL` and `UPSTASH_REDIS_REST_KV_REST_API_TOKEN`
 
 The original exported Figma artwork is stored under `public/assets`.

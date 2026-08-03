@@ -7,6 +7,13 @@ import { useMicrophoneLevel } from "./useMicrophoneLevel";
 type Screen = "welcome" | "microphone" | "preparing" | "blowing" | "flying" | "expired";
 type DandelionState = "Welcome" | "Microphone" | "Loading" | "Idle" | "Weak" | "Medium" | "Strong" | "Complete" | "Expired";
 
+type QueueStatus = {
+  active: boolean;
+  position: number;
+  peopleAhead: number;
+  estimatedWaitSeconds: number;
+};
+
 const A = "/assets/";
 
 function Logo() {
@@ -485,7 +492,59 @@ export function WishBloomApp() {
   const [progress, setProgress] = useState(0);
   const [remaining, setRemaining] = useState(120);
   const [permissionError, setPermissionError] = useState(false);
+  const [queueStatus, setQueueStatus] = useState<QueueStatus | null>(null);
+  const [queueError, setQueueError] = useState(false);
+  const [joiningQueue, setJoiningQueue] = useState(false);
+  const [hasTurn, setHasTurn] = useState(false);
+  const sessionIdRef = useRef<string | null>(null);
   const { level, permission, start, stop, resetCalibration } = useMicrophoneLevel();
+
+  const getSessionId = useCallback(() => {
+    if (sessionIdRef.current) return sessionIdRef.current;
+    const stored = window.sessionStorage.getItem("wishbloom-session-id");
+    const sessionId = stored ?? window.crypto.randomUUID();
+    window.sessionStorage.setItem("wishbloom-session-id", sessionId);
+    sessionIdRef.current = sessionId;
+    return sessionId;
+  }, []);
+
+  const leaveQueue = useCallback(() => {
+    const sessionId = sessionIdRef.current;
+    if (!sessionId) return;
+    void fetch("/api/queue", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sessionId }),
+      keepalive: true,
+    });
+  }, []);
+
+  const joinQueue = useCallback(async () => {
+    if (joiningQueue) return;
+    setJoiningQueue(true);
+    setQueueError(false);
+    try {
+      const response = await fetch("/api/queue", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId: getSessionId() }),
+      });
+      if (!response.ok) throw new Error("Queue unavailable");
+      const status = (await response.json()) as QueueStatus;
+      setQueueStatus(status);
+      setRemaining(status.estimatedWaitSeconds);
+      if (status.active) {
+        setHasTurn(true);
+        setScreen("microphone");
+      } else {
+        setScreen("preparing");
+      }
+    } catch {
+      setQueueError(true);
+    } finally {
+      setJoiningQueue(false);
+    }
+  }, [getSessionId, joiningQueue]);
 
   useEffect(() => {
     const fitCanvas = () => setCanvasScale(Math.min(1, window.innerWidth / 390));
@@ -510,6 +569,7 @@ export function WishBloomApp() {
 
     const expireSession = () => {
       window.localStorage.removeItem(hiddenAtKey);
+      leaveQueue();
       stop();
       setScreen("expired");
     };
@@ -568,22 +628,68 @@ export function WishBloomApp() {
       window.removeEventListener("pageshow", restoreSession);
       if (expiryTimer !== null) window.clearTimeout(expiryTimer);
     };
-  }, [screen, stop]);
+  }, [leaveQueue, screen, stop]);
 
   const countdown = useMemo(() => `${String(Math.floor(remaining / 60)).padStart(2, "0")}:${String(remaining % 60).padStart(2, "0")}`, [remaining]);
 
   useEffect(() => {
-    if (screen !== "preparing") return;
+    if (screen !== "preparing" || !hasTurn) return;
     const interval = window.setInterval(() => setRemaining((value) => Math.max(0, value - 1)), 1000);
     return () => clearInterval(interval);
-  }, [screen]);
+  }, [hasTurn, screen]);
 
   useEffect(() => {
-    if (screen === "preparing" && remaining === 0) {
+    if (screen !== "preparing" || hasTurn) return;
+
+    let active = true;
+    const refresh = async () => {
+      try {
+        const response = await fetch(`/api/queue?sessionId=${encodeURIComponent(getSessionId())}`, {
+          cache: "no-store",
+        });
+        if (!response.ok) throw new Error("Queue unavailable");
+        const status = (await response.json()) as QueueStatus;
+        if (!active) return;
+        setQueueError(false);
+        setQueueStatus(status);
+        setRemaining(status.estimatedWaitSeconds);
+        if (status.active) {
+          setHasTurn(true);
+          setScreen("microphone");
+        }
+      } catch {
+        if (active) setQueueError(true);
+      }
+    };
+
+    void refresh();
+    const interval = window.setInterval(refresh, 3000);
+    return () => {
+      active = false;
+      window.clearInterval(interval);
+    };
+  }, [getSessionId, hasTurn, screen]);
+
+  useEffect(() => {
+    if (screen === "preparing" && hasTurn && remaining === 0) {
       setProgress(0);
       setScreen("blowing");
     }
-  }, [remaining, screen]);
+  }, [hasTurn, remaining, screen]);
+
+  useEffect(() => {
+    if (!["microphone", "preparing", "blowing"].includes(screen)) return;
+    const heartbeat = window.setInterval(async () => {
+      try {
+        await fetch(`/api/queue?sessionId=${encodeURIComponent(getSessionId())}`, {
+          cache: "no-store",
+        });
+      } catch {
+        // The next queue refresh will surface a recoverable error to the user.
+      }
+    }, 8000);
+    return () => window.clearInterval(heartbeat);
+  }, [getSessionId, screen]);
 
   useEffect(() => {
     if (screen === "blowing" && permission === "granted") {
@@ -594,8 +700,9 @@ export function WishBloomApp() {
   useEffect(() => {
     if (screen !== "blowing" || level < 0.9995) return;
     stop();
+    leaveQueue();
     setScreen("flying");
-  }, [level, screen, stop]);
+  }, [leaveQueue, level, screen, stop]);
 
   const requestMicrophone = useCallback(async () => {
     setPermissionError(false);
@@ -660,13 +767,19 @@ export function WishBloomApp() {
           </motion.div>
           <motion.button
             className="welcome-start"
-            onClick={() => setScreen("microphone")}
+            onClick={joinQueue}
             whileTap={{ y: 3, scale: 0.991 }}
             transition={{ duration: 0.12 }}
+            disabled={joiningQueue}
             aria-label="Start"
           >
-            <span>Start</span>
+            <span>{joiningQueue ? "Joining…" : "Start"}</span>
           </motion.button>
+          {queueError && (
+            <button className="permission-error" onClick={joinQueue}>
+              The queue is temporarily unavailable. Tap to try again.
+            </button>
+          )}
           <FooterNote />
         </section>
       </main>
@@ -748,7 +861,14 @@ export function WishBloomApp() {
             <em>your wish.</em>
           </h1>
           <div className="welcome-support preparing-support">
-            <p>Estimated waiting time:</p>
+            <p>{hasTurn ? "Your experience is starting:" : "Estimated waiting time:"}</p>
+            {!hasTurn && queueStatus && (
+              <p className="queue-position">
+                {queueStatus.peopleAhead === 1
+                  ? "1 person is ahead of you."
+                  : `${queueStatus.peopleAhead} people are ahead of you.`}
+              </p>
+            )}
           </div>
           <motion.div
             className="welcome-dandelion"
@@ -779,6 +899,9 @@ export function WishBloomApp() {
             </div>
           </motion.div>
           <FooterNote keepOpen />
+          {queueError && !hasTurn && (
+            <p className="queue-connection-note">Reconnecting to the queue…</p>
+          )}
         </section>
       </main>
     );

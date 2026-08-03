@@ -331,6 +331,24 @@ button { font: inherit; }
   white-space: nowrap;
 }
 
+.queue-position {
+  margin-top: 5px !important;
+  color: #efedcd;
+  font-size: 12px;
+}
+
+.queue-connection-note {
+  position: absolute;
+  z-index: 12;
+  left: 50%;
+  bottom: 94px;
+  margin: 0;
+  transform: translateX(-50%);
+  color: #efedcd;
+  white-space: nowrap;
+  font: 12px/1.3 Inter, Arial, sans-serif;
+}
+
 .welcome-seed {
   position: absolute;
   display: block;
