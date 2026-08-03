@@ -15,6 +15,7 @@ type QueueStatus = {
 };
 
 const A = "/assets/";
+const ACTIVE_SESSION_TIMEOUT_MS = 2 * 60 * 1000;
 
 function Logo() {
   return (
@@ -497,6 +498,7 @@ export function WishBloomApp() {
   const [joiningQueue, setJoiningQueue] = useState(false);
   const [hasTurn, setHasTurn] = useState(false);
   const sessionIdRef = useRef<string | null>(null);
+  const lastActivityAtRef = useRef(Date.now());
   const { level, permission, start, stop, resetCalibration } = useMicrophoneLevel();
 
   const getSessionId = useCallback(() => {
@@ -518,6 +520,14 @@ export function WishBloomApp() {
       keepalive: true,
     });
   }, []);
+
+  const expireActiveSession = useCallback(() => {
+    leaveQueue();
+    stop();
+    setHasTurn(false);
+    setQueueStatus(null);
+    setScreen("expired");
+  }, [leaveQueue, stop]);
 
   const joinQueue = useCallback(async () => {
     if (joiningQueue) return;
@@ -554,81 +564,39 @@ export function WishBloomApp() {
   }, []);
 
   useEffect(() => {
-    if (screen === "expired") return;
+    if (!hasTurn || !["microphone", "preparing", "blowing"].includes(screen)) return;
 
-    const mobileSession = window.matchMedia("(pointer: coarse)").matches;
-    if (!mobileSession) return;
-
-    const hiddenAtKey = "wishbloom-hidden-at";
-    const storedHiddenAt = Number(window.localStorage.getItem(hiddenAtKey));
-    let hiddenAt: number | null =
-      Number.isFinite(storedHiddenAt) && storedHiddenAt > 0
-        ? storedHiddenAt
-        : null;
-    let expiryTimer: number | null = null;
-
-    const expireSession = () => {
-      window.localStorage.removeItem(hiddenAtKey);
-      leaveQueue();
-      stop();
-      setScreen("expired");
+    lastActivityAtRef.current = Date.now();
+    const recordActivity = () => {
+      lastActivityAtRef.current = Date.now();
     };
-
-    const scheduleExpiry = (delay = 3000) => {
-      if (expiryTimer !== null) window.clearTimeout(expiryTimer);
-      expiryTimer = window.setTimeout(expireSession, delay);
-    };
-
-    const markSessionHidden = () => {
-      if (hiddenAt === null) {
-        hiddenAt = Date.now();
-        window.localStorage.setItem(hiddenAtKey, String(hiddenAt));
+    const checkInactivity = () => {
+      if (Date.now() - lastActivityAtRef.current >= ACTIVE_SESSION_TIMEOUT_MS) {
+        expireActiveSession();
       }
-      scheduleExpiry(Math.max(0, 3000 - (Date.now() - hiddenAt)));
     };
-
-    const restoreSession = () => {
-      if (expiryTimer !== null) {
-        window.clearTimeout(expiryTimer);
-        expiryTimer = null;
-      }
-      if (hiddenAt !== null && Date.now() - hiddenAt >= 3000) {
-        expireSession();
-        return;
-      }
-      hiddenAt = null;
-      window.localStorage.removeItem(hiddenAtKey);
-    };
-
     const handleVisibilityChange = () => {
-      if (document.hidden) markSessionHidden();
-      else restoreSession();
+      if (!document.hidden) checkInactivity();
     };
 
-    if (hiddenAt !== null && Date.now() - hiddenAt >= 3000) {
-      expireSession();
-      return;
-    }
-    if (document.hidden) {
-      markSessionHidden();
-    } else if (hiddenAt !== null) {
-      hiddenAt = null;
-      window.localStorage.removeItem(hiddenAtKey);
-    }
-
+    window.addEventListener("pointerdown", recordActivity, { passive: true });
+    window.addEventListener("keydown", recordActivity);
     document.addEventListener("visibilitychange", handleVisibilityChange);
-    window.addEventListener("pagehide", markSessionHidden);
-    window.addEventListener("beforeunload", markSessionHidden);
-    window.addEventListener("pageshow", restoreSession);
+    const interval = window.setInterval(checkInactivity, 1000);
 
     return () => {
+      window.removeEventListener("pointerdown", recordActivity);
+      window.removeEventListener("keydown", recordActivity);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
-      window.removeEventListener("pagehide", markSessionHidden);
-      window.removeEventListener("beforeunload", markSessionHidden);
-      window.removeEventListener("pageshow", restoreSession);
-      if (expiryTimer !== null) window.clearTimeout(expiryTimer);
+      window.clearInterval(interval);
     };
-  }, [leaveQueue, screen, stop]);
+  }, [expireActiveSession, hasTurn, screen]);
+
+  useEffect(() => {
+    if (hasTurn && screen === "blowing" && level >= 0.05) {
+      lastActivityAtRef.current = Date.now();
+    }
+  }, [hasTurn, level, screen]);
 
   const countdown = useMemo(() => `${String(Math.floor(remaining / 60)).padStart(2, "0")}:${String(remaining % 60).padStart(2, "0")}`, [remaining]);
 
@@ -681,15 +649,16 @@ export function WishBloomApp() {
     if (!["microphone", "preparing", "blowing"].includes(screen)) return;
     const heartbeat = window.setInterval(async () => {
       try {
-        await fetch(`/api/queue?sessionId=${encodeURIComponent(getSessionId())}`, {
+        const response = await fetch(`/api/queue?sessionId=${encodeURIComponent(getSessionId())}`, {
           cache: "no-store",
         });
+        if (response.status === 410 && hasTurn) expireActiveSession();
       } catch {
         // The next queue refresh will surface a recoverable error to the user.
       }
     }, 8000);
     return () => window.clearInterval(heartbeat);
-  }, [getSessionId, screen]);
+  }, [expireActiveSession, getSessionId, hasTurn, screen]);
 
   useEffect(() => {
     if (screen === "blowing" && permission === "granted") {
@@ -701,6 +670,7 @@ export function WishBloomApp() {
     if (screen !== "blowing" || level < 0.9995) return;
     stop();
     leaveQueue();
+    setHasTurn(false);
     setScreen("flying");
   }, [leaveQueue, level, screen, stop]);
 

@@ -28,6 +28,7 @@ npm start
 - Start joins a shared first-in, first-out queue.
 - The first visitor moves to microphone permission while later visitors remain on the waiting screen.
 - Queue position and estimated wait update automatically, and the next visitor is released when the active visitor finishes or disconnects.
+- An active turn expires after two minutes without a tap, key press, or detected breath; the expired screen is shown and the next visitor is released.
 - Enable requests microphone access through `getUserMedia`.
 - A five-second preparation countdown displays after microphone permission is granted.
 - During the active session, microphone intensity drives continuous blow progress.

@@ -1,7 +1,9 @@
 const QUEUE_KEY = "wishbloom:queue";
 const SEQUENCE_KEY = "wishbloom:queue:sequence";
 const HEARTBEAT_PREFIX = "wishbloom:heartbeat:";
-const HEARTBEAT_TTL_SECONDS = 20;
+// Slightly longer than the two-minute client inactivity window so a suspended
+// phone cannot keep the active slot indefinitely.
+const HEARTBEAT_TTL_SECONDS = 125;
 export const ESTIMATED_TURN_SECONDS = 120;
 
 type RedisValue = string | number | null;
