@@ -1,6 +1,7 @@
 const QUEUE_KEY = "wishbloom:queue";
 const SEQUENCE_KEY = "wishbloom:queue:sequence";
 const HEARTBEAT_PREFIX = "wishbloom:heartbeat:";
+const TRIGGER_PREFIX = "wishbloom:trigger:";
 // Slightly longer than the two-minute client inactivity window so a suspended
 // phone cannot keep the active slot indefinitely.
 const HEARTBEAT_TTL_SECONDS = 125;
@@ -153,4 +154,49 @@ export async function leaveQueue(sessionId: string): Promise<void> {
     `${HEARTBEAT_PREFIX}${sessionId}`,
     sessionId,
   ]);
+}
+
+const reserveTriggerScript = `
+local queue = KEYS[1]
+local trigger = KEYS[2]
+local sessionId = ARGV[1]
+
+while true do
+  local head = redis.call('ZRANGE', queue, 0, 0)[1]
+  if not head then return 0 end
+  if redis.call('EXISTS', '${HEARTBEAT_PREFIX}' .. head) == 1 then break end
+  redis.call('ZREM', queue, head)
+end
+
+local head = redis.call('ZRANGE', queue, 0, 0)[1]
+if head ~= sessionId then return 0 end
+local triggerState = redis.call('GET', trigger)
+if triggerState == 'published' then return 2 end
+if triggerState == 'publishing' then return 3 end
+redis.call('SET', trigger, 'publishing', 'EX', 30)
+return 1
+`;
+
+export async function reserveWishTrigger(sessionId: string): Promise<"reserved" | "already-triggered" | "busy" | "not-active"> {
+  const result = Number(await command<number>([
+    "EVAL",
+    reserveTriggerScript,
+    2,
+    QUEUE_KEY,
+    `${TRIGGER_PREFIX}${sessionId}`,
+    sessionId,
+  ]));
+
+  if (result === 1) return "reserved";
+  if (result === 2) return "already-triggered";
+  if (result === 3) return "busy";
+  return "not-active";
+}
+
+export async function completeWishTrigger(sessionId: string): Promise<void> {
+  await command<string>(["SET", `${TRIGGER_PREFIX}${sessionId}`, "published", "EX", 300]);
+}
+
+export async function releaseWishTriggerReservation(sessionId: string): Promise<void> {
+  await command<number>(["DEL", `${TRIGGER_PREFIX}${sessionId}`]);
 }

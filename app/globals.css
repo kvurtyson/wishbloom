@@ -799,6 +799,11 @@ button { font: inherit; }
   font: 11px/1.2 Inter, sans-serif;
 }
 
+.wish-trigger-error {
+  top: 690px;
+  cursor: pointer;
+}
+
 .progress-track {
   position: absolute;
   z-index: 10;

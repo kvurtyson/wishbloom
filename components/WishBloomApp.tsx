@@ -496,9 +496,11 @@ export function WishBloomApp() {
   const [queueStatus, setQueueStatus] = useState<QueueStatus | null>(null);
   const [queueError, setQueueError] = useState(false);
   const [joiningQueue, setJoiningQueue] = useState(false);
+  const [triggerError, setTriggerError] = useState(false);
   const [hasTurn, setHasTurn] = useState(false);
   const sessionIdRef = useRef<string | null>(null);
   const lastActivityAtRef = useRef(Date.now());
+  const triggeringRef = useRef(false);
   const { level, permission, start, stop, resetCalibration } = useMicrophoneLevel();
 
   const getSessionId = useCallback(() => {
@@ -528,6 +530,30 @@ export function WishBloomApp() {
     setQueueStatus(null);
     setScreen("expired");
   }, [leaveQueue, stop]);
+
+  const triggerWish = useCallback(async () => {
+    if (triggeringRef.current) return;
+    triggeringRef.current = true;
+    setTriggerError(false);
+    stop();
+
+    try {
+      const response = await fetch("/api/wish/trigger", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId: getSessionId() }),
+      });
+      if (!response.ok) throw new Error("Wish trigger failed");
+
+      setHasTurn(false);
+      setQueueStatus(null);
+      setScreen("flying");
+    } catch {
+      setTriggerError(true);
+    } finally {
+      triggeringRef.current = false;
+    }
+  }, [getSessionId, stop]);
 
   const joinQueue = useCallback(async () => {
     if (joiningQueue) return;
@@ -668,11 +694,8 @@ export function WishBloomApp() {
 
   useEffect(() => {
     if (screen !== "blowing" || level < 0.9995) return;
-    stop();
-    leaveQueue();
-    setHasTurn(false);
-    setScreen("flying");
-  }, [leaveQueue, level, screen, stop]);
+    void triggerWish();
+  }, [level, screen, triggerWish]);
 
   const requestMicrophone = useCallback(async () => {
     setPermissionError(false);
@@ -914,6 +937,11 @@ export function WishBloomApp() {
             />
           </div>
           <FooterNote keepOpen />
+          {triggerError && (
+            <button className="permission-error wish-trigger-error" onClick={() => void triggerWish()}>
+              Connection problem. Tap to send your wish again.
+            </button>
+          )}
         </section>
       </main>
     );
