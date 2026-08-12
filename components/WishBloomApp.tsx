@@ -15,7 +15,7 @@ type QueueStatus = {
 };
 
 const A = "/assets/";
-const ACTIVE_SESSION_TIMEOUT_MS = 2 * 60 * 1000;
+const ACTIVE_SESSION_TIMEOUT_MS = 30 * 1000;
 
 function Logo() {
   return (
@@ -499,7 +499,7 @@ export function WishBloomApp() {
   const [triggerError, setTriggerError] = useState(false);
   const [hasTurn, setHasTurn] = useState(false);
   const sessionIdRef = useRef<string | null>(null);
-  const lastActivityAtRef = useRef(Date.now());
+  const turnStartedAtRef = useRef<number | null>(null);
   const triggeringRef = useRef(false);
   const { level, permission, start, stop, resetCalibration } = useMicrophoneLevel();
 
@@ -590,14 +590,18 @@ export function WishBloomApp() {
   }, []);
 
   useEffect(() => {
+    if (hasTurn && turnStartedAtRef.current === null) {
+      turnStartedAtRef.current = Date.now();
+    }
+    if (!hasTurn) turnStartedAtRef.current = null;
+  }, [hasTurn]);
+
+  useEffect(() => {
     if (!hasTurn || !["microphone", "preparing", "blowing"].includes(screen)) return;
 
-    lastActivityAtRef.current = Date.now();
-    const recordActivity = () => {
-      lastActivityAtRef.current = Date.now();
-    };
     const checkInactivity = () => {
-      if (Date.now() - lastActivityAtRef.current >= ACTIVE_SESSION_TIMEOUT_MS) {
+      const turnStartedAt = turnStartedAtRef.current;
+      if (turnStartedAt !== null && Date.now() - turnStartedAt >= ACTIVE_SESSION_TIMEOUT_MS) {
         expireActiveSession();
       }
     };
@@ -605,24 +609,14 @@ export function WishBloomApp() {
       if (!document.hidden) checkInactivity();
     };
 
-    window.addEventListener("pointerdown", recordActivity, { passive: true });
-    window.addEventListener("keydown", recordActivity);
     document.addEventListener("visibilitychange", handleVisibilityChange);
     const interval = window.setInterval(checkInactivity, 1000);
 
     return () => {
-      window.removeEventListener("pointerdown", recordActivity);
-      window.removeEventListener("keydown", recordActivity);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.clearInterval(interval);
     };
   }, [expireActiveSession, hasTurn, screen]);
-
-  useEffect(() => {
-    if (hasTurn && screen === "blowing" && level >= 0.05) {
-      lastActivityAtRef.current = Date.now();
-    }
-  }, [hasTurn, level, screen]);
 
   const countdown = useMemo(() => `${String(Math.floor(remaining / 60)).padStart(2, "0")}:${String(remaining % 60).padStart(2, "0")}`, [remaining]);
 

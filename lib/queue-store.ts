@@ -2,10 +2,11 @@ const QUEUE_KEY = "wishbloom:queue";
 const SEQUENCE_KEY = "wishbloom:queue:sequence";
 const HEARTBEAT_PREFIX = "wishbloom:heartbeat:";
 const TRIGGER_PREFIX = "wishbloom:trigger:";
-// Slightly longer than the two-minute client inactivity window so a suspended
-// phone cannot keep the active slot indefinitely.
-const HEARTBEAT_TTL_SECONDS = 125;
-export const ESTIMATED_TURN_SECONDS = 120;
+// The measured end-to-end flow takes about 18 seconds. A 30-second turn leaves
+// room for microphone permission and a slower first attempt without holding up
+// the queue for two minutes.
+const HEARTBEAT_TTL_SECONDS = 35;
+export const ESTIMATED_TURN_SECONDS = 30;
 
 type RedisValue = string | number | null;
 
