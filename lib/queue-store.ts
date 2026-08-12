@@ -2,11 +2,11 @@ const QUEUE_KEY = "wishbloom:queue";
 const SEQUENCE_KEY = "wishbloom:queue:sequence";
 const HEARTBEAT_PREFIX = "wishbloom:heartbeat:";
 const TRIGGER_PREFIX = "wishbloom:trigger:";
-// The measured end-to-end flow takes about 18 seconds. A 30-second turn leaves
-// room for microphone permission and a slower first attempt without holding up
-// the queue for two minutes.
-const HEARTBEAT_TTL_SECONDS = 35;
-export const ESTIMATED_TURN_SECONDS = 30;
+// A familiar user completed the end-to-end flow in about 34 seconds. A
+// one-minute turn leaves enough room for first-time users to read the guidance,
+// grant microphone permission, and complete their wish.
+const HEARTBEAT_TTL_SECONDS = 65;
+export const ESTIMATED_TURN_SECONDS = 60;
 
 type RedisValue = string | number | null;
 
