@@ -5,9 +5,9 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 function mqttConfig() {
-  const url = process.env.MQTT_BROKER_URL;
-  const username = process.env.MQTT_USERNAME;
-  const password = process.env.MQTT_PASSWORD;
+  const url = process.env.MQTT_BROKER_URL_windows ?? process.env.MQTT_BROKER_URL;
+  const username = process.env.MQTT_USERNAME_windows ?? process.env.MQTT_USERNAME;
+  const password = process.env.MQTT_PASSWORD_windows ?? process.env.MQTT_PASSWORD;
 
   if (!url || !username || !password) {
     throw new Error("MQTT is not configured.");
@@ -17,7 +17,10 @@ function mqttConfig() {
     url,
     username,
     password,
-    topic: process.env.MQTT_DANDELION_TOPIC ?? "/dandelion",
+    topic:
+      process.env.MQTT_DANDELION_TOPIC_windows ??
+      process.env.MQTT_DANDELION_TOPIC ??
+      "/dandelion",
   };
 }
 
