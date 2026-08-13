@@ -15,7 +15,7 @@ type QueueStatus = {
 };
 
 const A = "/assets/";
-const ACTIVE_SESSION_TIMEOUT_MS = 2 * 60 * 1000;
+const ACTIVE_SESSION_TIMEOUT_MS = 5 * 1000;
 
 function Logo() {
   return (
@@ -678,7 +678,7 @@ export function WishBloomApp() {
       } catch {
         // The next queue refresh will surface a recoverable error to the user.
       }
-    }, 8000);
+    }, 2000);
     return () => window.clearInterval(heartbeat);
   }, [expireActiveSession, getSessionId, hasTurn, screen]);
 
