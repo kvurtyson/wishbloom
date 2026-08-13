@@ -314,16 +314,28 @@ function ExpiredScreen({ canvasScale }: { canvasScale: number }) {
   );
 }
 
-function InteractiveDandelionSeeds({ level }: { level: number }) {
+function InteractiveDandelionSeeds({
+  level,
+  onComplete,
+}: {
+  level: number;
+  onComplete: () => void;
+}) {
   const outerRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
   const groupsRef = useRef<SeedPath[][]>([]);
   const levelRef = useRef(level);
   const animatedLevelRef = useRef(0);
   const completionStartedRef = useRef<number | null>(null);
+  const completionReportedRef = useRef(false);
+  const onCompleteRef = useRef(onComplete);
   const [artwork, setArtwork] = useState({ outer: "", inner: "" });
   const outerArtwork = useMemo(() => ({ __html: artwork.outer }), [artwork.outer]);
   const innerArtwork = useMemo(() => ({ __html: artwork.inner }), [artwork.inner]);
+
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
 
   useEffect(() => {
     levelRef.current = Math.max(levelRef.current, level);
@@ -452,6 +464,15 @@ function InteractiveDandelionSeeds({ level }: { level: number }) {
         seedGroup.setAttribute("opacity", String(opacity));
       });
 
+      if (
+        completionStartedRef.current !== null &&
+        !completionReportedRef.current &&
+        now - completionStartedRef.current >= 1500 + Math.max(0, reservedSeedCount - 1) * 320
+      ) {
+        completionReportedRef.current = true;
+        onCompleteRef.current();
+      }
+
       frame = requestAnimationFrame(animateSeeds);
     };
     frame = requestAnimationFrame(animateSeeds);
@@ -498,6 +519,7 @@ export function WishBloomApp() {
   const [joiningQueue, setJoiningQueue] = useState(false);
   const [hasTurn, setHasTurn] = useState(false);
   const sessionIdRef = useRef<string | null>(null);
+  const processingTriggerSentRef = useRef(false);
   const lastActivityAtRef = useRef(Date.now());
   const { level, permission, start, stop, resetCalibration } = useMicrophoneLevel();
 
@@ -666,13 +688,27 @@ export function WishBloomApp() {
     }
   }, [permission, resetCalibration, screen]);
 
-  useEffect(() => {
-    if (screen !== "blowing" || level < 0.9995) return;
-    stop();
-    leaveQueue();
-    setHasTurn(false);
-    setScreen("flying");
-  }, [leaveQueue, level, screen, stop]);
+  const finishBlowing = useCallback(async () => {
+    if (processingTriggerSentRef.current) return;
+    processingTriggerSentRef.current = true;
+
+    try {
+      const response = await fetch("/api/dandelion/trigger", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId: getSessionId() }),
+      });
+      if (!response.ok) throw new Error("Processing trigger failed");
+
+      stop();
+      leaveQueue();
+      setHasTurn(false);
+      setScreen("flying");
+    } catch (error) {
+      processingTriggerSentRef.current = false;
+      console.error(error);
+    }
+  }, [getSessionId, leaveQueue, stop]);
 
   const requestMicrophone = useCallback(async () => {
     setPermissionError(false);
@@ -903,13 +939,13 @@ export function WishBloomApp() {
             <div className="welcome-dandelion-base" aria-hidden="true">
               <img className="welcome-flower-stem" src={`${A}stem.svg`} alt="" />
               <img className="welcome-flower-glow" src={`${A}glow.svg`} alt="" />
-              <InteractiveDandelionSeeds level={level} />
+              <InteractiveDandelionSeeds level={level} onComplete={finishBlowing} />
             </div>
           </motion.div>
           <div className="welcome-blow-progress" aria-label="Blow progress">
             <motion.div
               className="welcome-blow-progress-fill"
-              animate={{ width: `${20 + level * 80}%` }}
+              animate={{ width: `${level >= 0.9995 ? 100 : 20 + level * 80}%` }}
               transition={{ duration: 0.06, ease: "linear" }}
             />
           </div>

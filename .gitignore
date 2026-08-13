@@ -3,4 +3,5 @@ node_modules/
 .npm-cache/
 out/
 dist/
+.env*.local
 *.tsbuildinfo
