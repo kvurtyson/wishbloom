@@ -700,7 +700,6 @@ export function WishBloomApp() {
     });
 
     stop();
-    leaveQueue();
     setHasTurn(false);
     setScreen("flying");
 
@@ -708,6 +707,7 @@ export function WishBloomApp() {
       const response = await triggerRequest;
       if (!response.ok) throw new Error("Processing trigger failed");
     } catch (error) {
+      leaveQueue();
       console.error(error);
     }
   }, [getSessionId, leaveQueue, stop]);

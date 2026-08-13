@@ -1,5 +1,6 @@
 import { connectAsync } from "mqtt";
 import { NextRequest, NextResponse } from "next/server";
+import { markSessionWaitingForProcessing } from "@/lib/queue-store";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -21,6 +22,10 @@ function mqttConfig() {
       process.env.MQTT_DANDELION_TOPIC_windows ??
       process.env.MQTT_DANDELION_TOPIC ??
       "/dandelion",
+    statusTopic:
+      process.env.MQTT_DANDELION_STATUS_TOPIC_windows ??
+      process.env.MQTT_DANDELION_STATUS_TOPIC ??
+      "/dandelion/status",
   };
 }
 
@@ -33,7 +38,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid session." }, { status: 400 });
     }
 
-    const { url, username, password, topic } = mqttConfig();
+    const { url, username, password, topic, statusTopic } = mqttConfig();
     client = await connectAsync(url, {
       username,
       password,
@@ -43,7 +48,9 @@ export async function POST(request: NextRequest) {
       connectTimeout: 10_000,
     });
 
+    await client.publishAsync(statusTopic, "busy", { qos: 1, retain: true });
     await client.publishAsync(topic, "1", { qos: 0, retain: false });
+    await markSessionWaitingForProcessing(body.sessionId);
     await client.endAsync();
     client = null;
 

@@ -1,5 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getQueueStatus, joinQueue, leaveQueue } from "@/lib/queue-store";
+import {
+  getQueueStatus,
+  joinQueue,
+  leaveQueue,
+  processingResetIsPending,
+  releaseProcessedSession,
+} from "@/lib/queue-store";
+import { processingFlowersAreReady } from "@/lib/processing-status";
 
 export const dynamic = "force-dynamic";
 
@@ -37,6 +44,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Invalid session." }, { status: 400 });
     }
 
+    if (await processingResetIsPending() && await processingFlowersAreReady()) {
+      await releaseProcessedSession();
+    }
     const status = await getQueueStatus(sessionId);
     if (!status) {
       return NextResponse.json({ error: "Session is no longer in the queue." }, { status: 410 });
