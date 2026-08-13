@@ -536,7 +536,12 @@ button { font: inherit; }
   height: 65.830017px;
   padding: 0;
   border: 0;
+  outline: 0;
   border-radius: 32.915009px;
+  overflow: hidden;
+  appearance: none;
+  -webkit-appearance: none;
+  -webkit-tap-highlight-color: transparent;
   color: #efedcd;
   background: rgba(16, 83, 100, .7);
   box-shadow:
@@ -553,10 +558,20 @@ button { font: inherit; }
   font-style: italic;
   font-weight: 300;
   line-height: normal;
+  isolation: isolate;
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 .welcome-start span {
+  position: relative;
+  z-index: 1;
+  display: block;
   transform: translateY(-2px);
+  -webkit-font-smoothing: antialiased;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 .welcome-start:active {
