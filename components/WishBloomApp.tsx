@@ -520,7 +520,7 @@ export function WishBloomApp() {
   const [hasTurn, setHasTurn] = useState(false);
   const sessionIdRef = useRef<string | null>(null);
   const processingTriggerSentRef = useRef(false);
-  const lastActivityAtRef = useRef(Date.now());
+  const hiddenAtRef = useRef<number | null>(null);
   const { level, permission, start, stop, resetCalibration } = useMicrophoneLevel();
 
   const getSessionId = useCallback(() => {
@@ -588,37 +588,26 @@ export function WishBloomApp() {
   useEffect(() => {
     if (!hasTurn || !["microphone", "preparing", "blowing"].includes(screen)) return;
 
-    lastActivityAtRef.current = Date.now();
-    const recordActivity = () => {
-      lastActivityAtRef.current = Date.now();
-    };
-    const checkInactivity = () => {
-      if (Date.now() - lastActivityAtRef.current >= ACTIVE_SESSION_TIMEOUT_MS) {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        hiddenAtRef.current = Date.now();
+        return;
+      }
+
+      const hiddenAt = hiddenAtRef.current;
+      hiddenAtRef.current = null;
+      if (hiddenAt !== null && Date.now() - hiddenAt >= ACTIVE_SESSION_TIMEOUT_MS) {
         expireActiveSession();
       }
     };
-    const handleVisibilityChange = () => {
-      if (!document.hidden) checkInactivity();
-    };
 
-    window.addEventListener("pointerdown", recordActivity, { passive: true });
-    window.addEventListener("keydown", recordActivity);
     document.addEventListener("visibilitychange", handleVisibilityChange);
-    const interval = window.setInterval(checkInactivity, 1000);
 
     return () => {
-      window.removeEventListener("pointerdown", recordActivity);
-      window.removeEventListener("keydown", recordActivity);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
-      window.clearInterval(interval);
+      hiddenAtRef.current = null;
     };
   }, [expireActiveSession, hasTurn, screen]);
-
-  useEffect(() => {
-    if (hasTurn && screen === "blowing" && level >= 0.05) {
-      lastActivityAtRef.current = Date.now();
-    }
-  }, [hasTurn, level, screen]);
 
   const countdown = useMemo(() => `${String(Math.floor(remaining / 60)).padStart(2, "0")}:${String(remaining % 60).padStart(2, "0")}`, [remaining]);
 
