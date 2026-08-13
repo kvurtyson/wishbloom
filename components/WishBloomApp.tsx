@@ -15,7 +15,7 @@ type QueueStatus = {
 };
 
 const A = "/assets/";
-const ACTIVE_SESSION_TIMEOUT_MS = 5 * 1000;
+const ACTIVE_SESSION_TIMEOUT_MS = 10 * 1000;
 
 function Logo() {
   return (
