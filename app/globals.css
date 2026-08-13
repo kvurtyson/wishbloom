@@ -543,13 +543,7 @@ button { font: inherit; }
   -webkit-appearance: none;
   -webkit-tap-highlight-color: transparent;
   color: #efedcd;
-  background: rgba(16, 83, 100, .7);
-  box-shadow:
-    inset 2px -2px 4px rgba(239, 237, 205, .5),
-    inset -1px 1px 4px -1px rgba(239, 237, 205, .5),
-    4px 8px 12.8px rgba(0, 0, 0, .25);
-  -webkit-backdrop-filter: blur(5px);
-  backdrop-filter: blur(5px);
+  background: transparent;
   cursor: pointer;
   display: grid;
   place-items: center;
@@ -564,6 +558,23 @@ button { font: inherit; }
   backface-visibility: hidden;
 }
 
+.welcome-start::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: rgba(16, 83, 100, .7);
+  box-shadow:
+    inset 2px -2px 4px rgba(239, 237, 205, .5),
+    inset -1px 1px 4px -1px rgba(239, 237, 205, .5),
+    4px 8px 12.8px rgba(0, 0, 0, .25);
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+  transform: translateZ(0);
+}
+
 .welcome-start span {
   position: relative;
   z-index: 1;
@@ -574,7 +585,7 @@ button { font: inherit; }
   backface-visibility: hidden;
 }
 
-.welcome-start:active {
+.welcome-start:active::before {
   box-shadow:
     inset 2px -2px 4px rgba(239, 237, 205, .5),
     inset -1px 1px 4px -1px rgba(239, 237, 205, .5);
