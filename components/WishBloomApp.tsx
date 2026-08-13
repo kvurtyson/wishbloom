@@ -237,6 +237,29 @@ function FlyingSeed({
   );
 }
 
+function InlineVectorAsset({ className, asset }: { className: string; asset: string }) {
+  const [markup, setMarkup] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    fetch(`${A}${asset}`)
+      .then((response) => response.text())
+      .then((svg) => {
+        if (active) setMarkup(svg);
+      });
+    return () => {
+      active = false;
+    };
+  }, [asset]);
+
+  return (
+    <span
+      className={`${className} welcome-inline-vector`}
+      dangerouslySetInnerHTML={{ __html: markup }}
+    />
+  );
+}
+
 function FlyingScreen({ canvasScale }: { canvasScale: number }) {
   return (
     <main className="fixed-viewport">
@@ -762,8 +785,8 @@ export function WishBloomApp() {
             <div className="welcome-dandelion-base" aria-hidden="true">
               <img className="welcome-flower-stem" src={`${A}stem.svg`} alt="" />
               <img className="welcome-flower-glow" src={`${A}glow.svg`} alt="" />
-              <img className="welcome-flower-head" src={`${A}welcome-flower-head.svg`} alt="" />
-              <img className="welcome-flower-core" src={`${A}welcome-flower-core.svg`} alt="" />
+              <InlineVectorAsset className="welcome-flower-head" asset="welcome-flower-head.svg" />
+              <InlineVectorAsset className="welcome-flower-core" asset="welcome-flower-core.svg" />
             </div>
             <WelcomeFlyingSeed className="welcome-seed seed-one" asset="welcome-seed-1.svg" delay={0} duration={5} path={{ x: [0, 32, 91, 172], y: [0, -24, -77, -151], rotate: [0, 7, 15, 23] }} />
             <WelcomeFlyingSeed className="welcome-seed seed-two" asset="welcome-seed-2.svg" delay={1.2} duration={6.3} path={{ x: [0, 24, 76, 145], y: [0, -36, -92, -178], rotate: [0, -5, -13, -21] }} />
