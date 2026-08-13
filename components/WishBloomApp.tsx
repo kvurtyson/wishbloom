@@ -512,7 +512,7 @@ export function WishBloomApp() {
   const [canvasScale, setCanvasScale] = useState(1);
   const [screen, setScreen] = useState<Screen>("welcome");
   const [progress, setProgress] = useState(0);
-  const [remaining, setRemaining] = useState(120);
+  const [remaining, setRemaining] = useState(60);
   const [permissionError, setPermissionError] = useState(false);
   const [queueStatus, setQueueStatus] = useState<QueueStatus | null>(null);
   const [queueError, setQueueError] = useState(false);
