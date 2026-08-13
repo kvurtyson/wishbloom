@@ -692,23 +692,31 @@ export function WishBloomApp() {
     if (processingTriggerSentRef.current) return;
     processingTriggerSentRef.current = true;
 
-    try {
-      const response = await fetch("/api/dandelion/trigger", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sessionId: getSessionId() }),
-      });
-      if (!response.ok) throw new Error("Processing trigger failed");
+    const triggerRequest = fetch("/api/dandelion/trigger", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sessionId: getSessionId() }),
+      keepalive: true,
+    });
 
-      stop();
-      leaveQueue();
-      setHasTurn(false);
-      setScreen("flying");
+    stop();
+    leaveQueue();
+    setHasTurn(false);
+    setScreen("flying");
+
+    try {
+      const response = await triggerRequest;
+      if (!response.ok) throw new Error("Processing trigger failed");
     } catch (error) {
-      processingTriggerSentRef.current = false;
       console.error(error);
     }
   }, [getSessionId, leaveQueue, stop]);
+
+  useEffect(() => {
+    if (screen === "blowing" && level >= 0.9995) {
+      void finishBlowing();
+    }
+  }, [finishBlowing, level, screen]);
 
   const requestMicrophone = useCallback(async () => {
     setPermissionError(false);
