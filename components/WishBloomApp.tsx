@@ -659,6 +659,7 @@ export function WishBloomApp() {
   useEffect(() => {
     if (!["microphone", "preparing", "blowing"].includes(screen)) return;
     const heartbeat = window.setInterval(async () => {
+      if (document.hidden) return;
       try {
         const response = await fetch(`/api/queue?sessionId=${encodeURIComponent(getSessionId())}`, {
           cache: "no-store",
