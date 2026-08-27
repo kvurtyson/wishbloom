@@ -39,7 +39,14 @@ function FooterNote({
 }) {
   return (
     <div className={`footer-note ${keepOpen ? "keep-open" : ""} ${className}`.trim()}>
-      <img src={`${A}${icon}`} alt="" />
+      {icon === "reload.svg" ? (
+        <svg className="footer-reload-icon" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+          <path d="M12.6 4.7A5.75 5.75 0 1 0 13.18 9" />
+          <path d="M9.9 4.72H12.7V1.92" />
+        </svg>
+      ) : (
+        <img src={`${A}${icon}`} alt="" />
+      )}
       <span>{message ?? (keepOpen ? "Please keep this page open." : "No audio is recorded or uploaded.")}</span>
     </div>
   );
@@ -323,12 +330,13 @@ function FlyingScreen({ canvasScale }: { canvasScale: number }) {
     const handleTouchEnd = () => {
       const shouldRefresh = pullDistanceRef.current > 1;
       touchStartYRef.current = null;
-      pullDistanceRef.current = 0;
-      surface.style.transition = "transform 420ms cubic-bezier(.22,.7,.25,1)";
-      surface.style.transform = "translateY(0)";
       if (shouldRefresh) {
+        surface.style.transition = "none";
         completeRefresh();
       } else {
+        pullDistanceRef.current = 0;
+        surface.style.transition = "transform 420ms cubic-bezier(.22,.7,.25,1)";
+        surface.style.transform = "translateY(0)";
         window.setTimeout(() => setShowRefreshIndicator(false), 260);
       }
     };

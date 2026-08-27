@@ -892,6 +892,21 @@ button { font: inherit; }
   transform: translateX(-50%);
 }
 .footer-note img { position: static; width: 15px; height: 15px; }
+.footer-note .footer-reload-icon {
+  position: static;
+  display: block;
+  flex: 0 0 15px;
+  width: 15px;
+  height: 15px;
+  overflow: visible;
+}
+.footer-note .footer-reload-icon path {
+  fill: none;
+  stroke: #e7a2b2;
+  stroke-width: 1.55;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
 
 .permission-error {
   position: absolute;
