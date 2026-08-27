@@ -290,7 +290,7 @@ function FlyingScreen({ canvasScale }: { canvasScale: number }) {
     window.setTimeout(() => {
       window.sessionStorage.removeItem("wishbloom-session-id");
       window.location.reload();
-    }, 900);
+    }, 3000);
   }, [refreshing]);
 
   return (
@@ -310,9 +310,9 @@ function FlyingScreen({ canvasScale }: { canvasScale: number }) {
               transition={{ duration: 0.2 }}
               aria-hidden="true"
             >
-              <svg viewBox="0 0 28 28" fill="none">
-                <circle cx="14" cy="14" r="10" />
-              </svg>
+              <span />
+              <span />
+              <span />
             </motion.div>
           )}
         </AnimatePresence>
@@ -322,6 +322,7 @@ function FlyingScreen({ canvasScale }: { canvasScale: number }) {
           dragConstraints={{ top: 0, bottom: 105 }}
           dragElastic={0.12}
           dragTransition={{ bounceStiffness: 260, bounceDamping: 24 }}
+          onDragStart={() => setShowRefreshIndicator(true)}
           onDrag={(_, info) => {
             if (info.offset.y > 1) setShowRefreshIndicator(true);
           }}
@@ -356,7 +357,7 @@ function FlyingScreen({ canvasScale }: { canvasScale: number }) {
                   keepOpen
                   className="refresh-page-note"
                   icon="reload.svg"
-                  message="Please keep this page open."
+                  message="Please refresh the page to make a new wish."
                 />
               </motion.div>
             )}
