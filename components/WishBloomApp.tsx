@@ -304,6 +304,7 @@ function FlyingScreen({ canvasScale }: { canvasScale: number }) {
       touchStartYRef.current = event.touches[0]?.clientY ?? null;
       pullDistanceRef.current = 0;
       surface.style.transition = "none";
+      setShowRefreshIndicator(true);
     };
 
     const handleTouchMove = (event: TouchEvent) => {
@@ -324,7 +325,11 @@ function FlyingScreen({ canvasScale }: { canvasScale: number }) {
       pullDistanceRef.current = 0;
       surface.style.transition = "transform 420ms cubic-bezier(.22,.7,.25,1)";
       surface.style.transform = "translateY(0)";
-      if (shouldRefresh) completeRefresh();
+      if (shouldRefresh) {
+        completeRefresh();
+      } else {
+        window.setTimeout(() => setShowRefreshIndicator(false), 260);
+      }
     };
 
     surface.addEventListener("touchstart", handleTouchStart, { passive: true });
