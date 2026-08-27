@@ -30,14 +30,16 @@ function FooterNote({
   keepOpen = false,
   message,
   className = "",
+  icon = "lock.svg",
 }: {
   keepOpen?: boolean;
   message?: string;
   className?: string;
+  icon?: string;
 }) {
   return (
     <div className={`footer-note ${keepOpen ? "keep-open" : ""} ${className}`.trim()}>
-      <img src={`${A}lock.svg`} alt="" />
+      <img src={`${A}${icon}`} alt="" />
       <span>{message ?? (keepOpen ? "Please keep this page open." : "No audio is recorded or uploaded.")}</span>
     </div>
   );
@@ -274,11 +276,20 @@ function InlineVectorAsset({ className, asset }: { className: string; asset: str
 
 function FlyingScreen({ canvasScale }: { canvasScale: number }) {
   const [seedsHaveLeft, setSeedsHaveLeft] = useState(false);
+  const [showRefreshIndicator, setShowRefreshIndicator] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     const timeout = window.setTimeout(() => setSeedsHaveLeft(true), FLYING_SEEDS_END_MS);
     return () => window.clearTimeout(timeout);
   }, []);
+
+  const completeRefresh = useCallback(() => {
+    if (refreshing) return;
+    setRefreshing(true);
+    setShowRefreshIndicator(true);
+    window.setTimeout(() => window.location.reload(), 900);
+  }, [refreshing]);
 
   return (
     <main className="fixed-viewport">
@@ -287,33 +298,68 @@ function FlyingScreen({ canvasScale }: { canvasScale: number }) {
         style={{ transform: `translate(-50%, -50%) scale(${canvasScale})` }}
         aria-label="WishBloom your wish is flying"
       >
-        <Logo />
-        <h1 className="welcome-heading flying-heading">
-          <span>Your wish is</span>
-          <em>now flying.</em>
-        </h1>
-        <p className="flying-support">Watch it on the facade.</p>
-        <div className="flying-seed-field">
-          {flyingSeeds.map((seed) => (
-            <FlyingSeed key={seed.asset} seed={seed} />
-          ))}
-        </div>
         <AnimatePresence>
-          {seedsHaveLeft && (
+          {showRefreshIndicator && (
             <motion.div
+              className="pull-refresh-indicator"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
+              transition={{ duration: 0.2 }}
+              aria-hidden="true"
             >
-              <FooterNote
-                keepOpen
-                className="refresh-page-note"
-                message="Please refresh the page to make a new wish."
-              />
+              <svg viewBox="0 0 28 28" fill="none">
+                <circle cx="14" cy="14" r="10" />
+              </svg>
             </motion.div>
           )}
         </AnimatePresence>
+        <motion.div
+          className={`flying-refresh-surface ${seedsHaveLeft ? "is-enabled" : ""}`}
+          drag={seedsHaveLeft && !refreshing ? "y" : false}
+          dragConstraints={{ top: -105, bottom: 0 }}
+          dragElastic={0.12}
+          dragTransition={{ bounceStiffness: 260, bounceDamping: 24 }}
+          onDrag={(_, info) => {
+            if (info.offset.y < -10) setShowRefreshIndicator(true);
+          }}
+          onDragEnd={(_, info) => {
+            if (info.offset.y <= -70) {
+              completeRefresh();
+            } else {
+              window.setTimeout(() => setShowRefreshIndicator(false), 260);
+            }
+          }}
+        >
+          <Logo />
+          <h1 className="welcome-heading flying-heading">
+            <span>Your wish is</span>
+            <em>now flying.</em>
+          </h1>
+          <p className="flying-support">Watch it on the facade.</p>
+          <div className="flying-seed-field">
+            {flyingSeeds.map((seed) => (
+              <FlyingSeed key={seed.asset} seed={seed} />
+            ))}
+          </div>
+          <AnimatePresence>
+            {seedsHaveLeft && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+              >
+                <FooterNote
+                  keepOpen
+                  className="refresh-page-note"
+                  icon="reload.svg"
+                  message="Please refresh the page to make a new wish."
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
       </section>
     </main>
   );
