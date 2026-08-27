@@ -197,9 +197,8 @@ const flyingSeeds = [
   { asset: "flying-seed-8.svg", left: -18, top: 470, width: 132, height: 168, rotate: 29.16, duration: 20.5, delay: 8.5, drift: 30 },
 ] as const;
 
-const FLYING_SEEDS_END_MS = Math.max(
-  ...flyingSeeds.map((seed) => seed.duration + seed.delay),
-) * 1000;
+// The largest foreground seed reaches the visual centre at roughly this point.
+const REFRESH_PROMPT_APPEAR_MS = 13_800;
 
 function FlyingSeed({
   seed,
@@ -275,12 +274,12 @@ function InlineVectorAsset({ className, asset }: { className: string; asset: str
 }
 
 function FlyingScreen({ canvasScale }: { canvasScale: number }) {
-  const [seedsHaveLeft, setSeedsHaveLeft] = useState(false);
+  const [refreshAvailable, setRefreshAvailable] = useState(false);
   const [showRefreshIndicator, setShowRefreshIndicator] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    const timeout = window.setTimeout(() => setSeedsHaveLeft(true), FLYING_SEEDS_END_MS);
+    const timeout = window.setTimeout(() => setRefreshAvailable(true), REFRESH_PROMPT_APPEAR_MS);
     return () => window.clearTimeout(timeout);
   }, []);
 
@@ -288,7 +287,10 @@ function FlyingScreen({ canvasScale }: { canvasScale: number }) {
     if (refreshing) return;
     setRefreshing(true);
     setShowRefreshIndicator(true);
-    window.setTimeout(() => window.location.reload(), 900);
+    window.setTimeout(() => {
+      window.sessionStorage.removeItem("wishbloom-session-id");
+      window.location.reload();
+    }, 900);
   }, [refreshing]);
 
   return (
@@ -315,16 +317,16 @@ function FlyingScreen({ canvasScale }: { canvasScale: number }) {
           )}
         </AnimatePresence>
         <motion.div
-          className={`flying-refresh-surface ${seedsHaveLeft ? "is-enabled" : ""}`}
-          drag={seedsHaveLeft && !refreshing ? "y" : false}
-          dragConstraints={{ top: -105, bottom: 0 }}
+          className={`flying-refresh-surface ${refreshAvailable ? "is-enabled" : ""}`}
+          drag={refreshAvailable && !refreshing ? "y" : false}
+          dragConstraints={{ top: 0, bottom: 105 }}
           dragElastic={0.12}
           dragTransition={{ bounceStiffness: 260, bounceDamping: 24 }}
           onDrag={(_, info) => {
-            if (info.offset.y < -10) setShowRefreshIndicator(true);
+            if (info.offset.y > 1) setShowRefreshIndicator(true);
           }}
           onDragEnd={(_, info) => {
-            if (info.offset.y <= -70) {
+            if (info.offset.y > 2) {
               completeRefresh();
             } else {
               window.setTimeout(() => setShowRefreshIndicator(false), 260);
@@ -343,18 +345,18 @@ function FlyingScreen({ canvasScale }: { canvasScale: number }) {
             ))}
           </div>
           <AnimatePresence>
-            {seedsHaveLeft && (
+            {refreshAvailable && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
+                transition={{ duration: 1.4, ease: "easeOut" }}
               >
                 <FooterNote
                   keepOpen
                   className="refresh-page-note"
                   icon="reload.svg"
-                  message="Please refresh the page to make a new wish."
+                  message="Please keep this page open."
                 />
               </motion.div>
             )}
