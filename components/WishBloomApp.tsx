@@ -277,6 +277,9 @@ function FlyingScreen({ canvasScale }: { canvasScale: number }) {
   const [refreshAvailable, setRefreshAvailable] = useState(false);
   const [showRefreshIndicator, setShowRefreshIndicator] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const refreshSurfaceRef = useRef<HTMLDivElement>(null);
+  const touchStartYRef = useRef<number | null>(null);
+  const pullDistanceRef = useRef(0);
 
   useEffect(() => {
     const timeout = window.setTimeout(() => setRefreshAvailable(true), REFRESH_PROMPT_APPEAR_MS);
@@ -292,6 +295,49 @@ function FlyingScreen({ canvasScale }: { canvasScale: number }) {
       window.location.reload();
     }, 3000);
   }, [refreshing]);
+
+  useEffect(() => {
+    const surface = refreshSurfaceRef.current;
+    if (!surface || !refreshAvailable || refreshing) return;
+
+    const handleTouchStart = (event: TouchEvent) => {
+      touchStartYRef.current = event.touches[0]?.clientY ?? null;
+      pullDistanceRef.current = 0;
+      surface.style.transition = "none";
+    };
+
+    const handleTouchMove = (event: TouchEvent) => {
+      const startY = touchStartYRef.current;
+      const currentY = event.touches[0]?.clientY;
+      if (startY === null || currentY === undefined) return;
+      const distance = Math.max(0, currentY - startY);
+      if (distance <= 0) return;
+      event.preventDefault();
+      pullDistanceRef.current = distance;
+      setShowRefreshIndicator(true);
+      surface.style.transform = `translateY(${Math.min(distance, 105)}px)`;
+    };
+
+    const handleTouchEnd = () => {
+      const shouldRefresh = pullDistanceRef.current > 1;
+      touchStartYRef.current = null;
+      pullDistanceRef.current = 0;
+      surface.style.transition = "transform 420ms cubic-bezier(.22,.7,.25,1)";
+      surface.style.transform = "translateY(0)";
+      if (shouldRefresh) completeRefresh();
+    };
+
+    surface.addEventListener("touchstart", handleTouchStart, { passive: true });
+    surface.addEventListener("touchmove", handleTouchMove, { passive: false });
+    surface.addEventListener("touchend", handleTouchEnd, { passive: true });
+    surface.addEventListener("touchcancel", handleTouchEnd, { passive: true });
+    return () => {
+      surface.removeEventListener("touchstart", handleTouchStart);
+      surface.removeEventListener("touchmove", handleTouchMove);
+      surface.removeEventListener("touchend", handleTouchEnd);
+      surface.removeEventListener("touchcancel", handleTouchEnd);
+    };
+  }, [completeRefresh, refreshAvailable, refreshing]);
 
   return (
     <main className="fixed-viewport">
@@ -316,23 +362,9 @@ function FlyingScreen({ canvasScale }: { canvasScale: number }) {
             </motion.div>
           )}
         </AnimatePresence>
-        <motion.div
+        <div
+          ref={refreshSurfaceRef}
           className={`flying-refresh-surface ${refreshAvailable ? "is-enabled" : ""}`}
-          drag={refreshAvailable && !refreshing ? "y" : false}
-          dragConstraints={{ top: 0, bottom: 105 }}
-          dragElastic={0.12}
-          dragTransition={{ bounceStiffness: 260, bounceDamping: 24 }}
-          onDragStart={() => setShowRefreshIndicator(true)}
-          onDrag={(_, info) => {
-            if (info.offset.y > 1) setShowRefreshIndicator(true);
-          }}
-          onDragEnd={(_, info) => {
-            if (info.offset.y > 2) {
-              completeRefresh();
-            } else {
-              window.setTimeout(() => setShowRefreshIndicator(false), 260);
-            }
-          }}
         >
           <Logo />
           <h1 className="welcome-heading flying-heading">
@@ -362,7 +394,7 @@ function FlyingScreen({ canvasScale }: { canvasScale: number }) {
               </motion.div>
             )}
           </AnimatePresence>
-        </motion.div>
+        </div>
       </section>
     </main>
   );

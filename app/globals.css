@@ -461,6 +461,7 @@ button { font: inherit; }
 .flying-refresh-surface.is-enabled {
   cursor: grab;
   touch-action: none;
+  overscroll-behavior-y: none;
 }
 
 .flying-refresh-surface.is-enabled:active {
@@ -470,7 +471,7 @@ button { font: inherit; }
 .pull-refresh-indicator {
   position: absolute;
   z-index: 12;
-  top: 28px;
+  top: 70px;
   left: 50%;
   width: 52px;
   height: 18px;
