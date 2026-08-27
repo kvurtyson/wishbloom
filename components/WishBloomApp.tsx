@@ -353,17 +353,17 @@ function FlyingScreen({ canvasScale }: { canvasScale: number }) {
         aria-label="WishBloom your wish is flying"
       >
         <div
-          className={`pull-refresh-indicator ${showRefreshIndicator ? "is-visible" : ""}`}
-          aria-hidden="true"
-        >
-          <span />
-          <span />
-          <span />
-        </div>
-        <div
           ref={refreshSurfaceRef}
           className={`flying-refresh-surface ${refreshAvailable ? "is-enabled" : ""}`}
         >
+          <div
+            className={`pull-refresh-indicator ${showRefreshIndicator ? "is-visible" : ""}`}
+            aria-hidden="true"
+          >
+            <span />
+            <span />
+            <span />
+          </div>
           <Logo />
           <h1 className="welcome-heading flying-heading">
             <span>Your wish is</span>

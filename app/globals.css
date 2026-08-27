@@ -471,7 +471,7 @@ button { font: inherit; }
 .pull-refresh-indicator {
   position: absolute;
   z-index: 1000;
-  top: 78px;
+  top: 68px;
   left: 50%;
   width: 60px;
   height: 20px;
