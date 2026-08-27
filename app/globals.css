@@ -822,6 +822,11 @@ button { font: inherit; }
 }
 
 .footer-note.keep-open { left: 106px; width: 177.114px; }
+.footer-note.refresh-page-note {
+  left: 50%;
+  width: auto;
+  transform: translateX(-50%);
+}
 .footer-note img { position: static; width: 15px; height: 15px; }
 
 .permission-error {

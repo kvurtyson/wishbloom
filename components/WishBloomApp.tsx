@@ -26,11 +26,19 @@ function Logo() {
   );
 }
 
-function FooterNote({ keepOpen = false }: { keepOpen?: boolean }) {
+function FooterNote({
+  keepOpen = false,
+  message,
+  className = "",
+}: {
+  keepOpen?: boolean;
+  message?: string;
+  className?: string;
+}) {
   return (
-    <div className={`footer-note ${keepOpen ? "keep-open" : ""}`}>
+    <div className={`footer-note ${keepOpen ? "keep-open" : ""} ${className}`.trim()}>
       <img src={`${A}lock.svg`} alt="" />
-      <span>{keepOpen ? "Please keep this page open." : "No audio is recorded or uploaded."}</span>
+      <span>{message ?? (keepOpen ? "Please keep this page open." : "No audio is recorded or uploaded.")}</span>
     </div>
   );
 }
@@ -187,6 +195,10 @@ const flyingSeeds = [
   { asset: "flying-seed-8.svg", left: -18, top: 470, width: 132, height: 168, rotate: 29.16, duration: 20.5, delay: 8.5, drift: 30 },
 ] as const;
 
+const FLYING_SEEDS_END_MS = Math.max(
+  ...flyingSeeds.map((seed) => seed.duration + seed.delay),
+) * 1000;
+
 function FlyingSeed({
   seed,
 }: {
@@ -261,6 +273,13 @@ function InlineVectorAsset({ className, asset }: { className: string; asset: str
 }
 
 function FlyingScreen({ canvasScale }: { canvasScale: number }) {
+  const [seedsHaveLeft, setSeedsHaveLeft] = useState(false);
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => setSeedsHaveLeft(true), FLYING_SEEDS_END_MS);
+    return () => window.clearTimeout(timeout);
+  }, []);
+
   return (
     <main className="fixed-viewport">
       <section
@@ -279,6 +298,22 @@ function FlyingScreen({ canvasScale }: { canvasScale: number }) {
             <FlyingSeed key={seed.asset} seed={seed} />
           ))}
         </div>
+        <AnimatePresence>
+          {seedsHaveLeft && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+            >
+              <FooterNote
+                keepOpen
+                className="refresh-page-note"
+                message="Please refresh the page to make a new wish."
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </section>
     </main>
   );
