@@ -456,12 +456,12 @@ button { font: inherit; }
   position: absolute;
   z-index: 2;
   inset: 0;
+  touch-action: none;
+  overscroll-behavior-y: none;
 }
 
 .flying-refresh-surface.is-enabled {
   cursor: grab;
-  touch-action: none;
-  overscroll-behavior-y: none;
 }
 
 .flying-refresh-surface.is-enabled:active {
@@ -471,7 +471,7 @@ button { font: inherit; }
 .pull-refresh-indicator {
   position: absolute;
   z-index: 1000;
-  top: 66px;
+  top: 78px;
   left: 50%;
   width: 60px;
   height: 20px;
@@ -481,6 +481,15 @@ button { font: inherit; }
   justify-content: space-between;
   pointer-events: none;
   filter: drop-shadow(0 1px 5px rgba(239, 237, 205, .42));
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .12s linear, visibility 0s linear .12s;
+}
+
+.pull-refresh-indicator.is-visible {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity .12s linear;
 }
 
 .pull-refresh-indicator span {

@@ -298,13 +298,13 @@ function FlyingScreen({ canvasScale }: { canvasScale: number }) {
 
   useEffect(() => {
     const surface = refreshSurfaceRef.current;
-    if (!surface || !refreshAvailable || refreshing) return;
+    if (!surface || refreshing) return;
 
     const handleTouchStart = (event: TouchEvent) => {
       touchStartYRef.current = event.touches[0]?.clientY ?? null;
       pullDistanceRef.current = 0;
       surface.style.transition = "none";
-      setShowRefreshIndicator(true);
+      if (refreshAvailable) setShowRefreshIndicator(true);
     };
 
     const handleTouchMove = (event: TouchEvent) => {
@@ -314,6 +314,7 @@ function FlyingScreen({ canvasScale }: { canvasScale: number }) {
       const distance = Math.max(0, currentY - startY);
       if (distance <= 0) return;
       event.preventDefault();
+      if (!refreshAvailable) return;
       pullDistanceRef.current = distance;
       setShowRefreshIndicator(true);
       surface.style.transform = `translateY(${Math.min(distance, 105)}px)`;
@@ -351,22 +352,14 @@ function FlyingScreen({ canvasScale }: { canvasScale: number }) {
         style={{ transform: `translate(-50%, -50%) scale(${canvasScale})` }}
         aria-label="WishBloom your wish is flying"
       >
-        <AnimatePresence>
-          {showRefreshIndicator && (
-            <motion.div
-              className="pull-refresh-indicator"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              aria-hidden="true"
-            >
-              <span />
-              <span />
-              <span />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <div
+          className={`pull-refresh-indicator ${showRefreshIndicator ? "is-visible" : ""}`}
+          aria-hidden="true"
+        >
+          <span />
+          <span />
+          <span />
+        </div>
         <div
           ref={refreshSurfaceRef}
           className={`flying-refresh-surface ${refreshAvailable ? "is-enabled" : ""}`}
